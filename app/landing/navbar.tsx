@@ -18,7 +18,7 @@ export default function Navbar() {
   const isProgrammePage = pathname === "/programme"
 
   // Array of logo images for the slideshow
-  const logoImages = ["/Group.png", "/global.png", "/summit.png", "/tvet.png"]
+  const logoImages = ["/eac.jpeg","/eac.jpeg"]
 
   // Auto-advance logo slideshow
   useEffect(() => {
@@ -32,8 +32,8 @@ export default function Navbar() {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Programme", href: "/programme" },
-    { name: "TVET-Expo", href: "/tvet" },
-    { name: "Inter-ministerial Summit", href: "/summit" },
+    // { name: "TVET-Expo", href: "/tvet" },
+    // { name: "Inter-ministerial Summit", href: "/summit" },
   ]
 
   const toggleMobileMenu = () => {
@@ -59,8 +59,8 @@ export default function Navbar() {
                 <Image
                   src={src || "/placeholder.svg"}
                   alt={`Rwanda FutureSkills Forum Logo ${index + 1}`}
-                  width={192}
-                  height={64}
+                  width={92}
+                  height={34}
                   className="object-contain"
                   priority={index === 0}
                 />

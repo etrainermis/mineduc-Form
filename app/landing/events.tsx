@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react"
 import Image from "next/image"
+import { motion } from "framer-motion"
 
-export default function PartnersPage() {
+export default function PartnersSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -25,119 +26,62 @@ export default function PartnersPage() {
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
 
-    // Define positions with proper spacing
-    const rtbPosition = { x: canvas.width * 0.25, y: canvas.height * 0.5 }
+    // Define positions for the two organizations
+    const eacPosition = { x: canvas.width * 0.25, y: canvas.height * 0.5 }
+    const rwandaPosition = { x: canvas.width * 0.75, y: canvas.height * 0.5 }
 
-    // Increased gap between lines and logos
-    const lineEndGap = 80
-
-    // For the blue line, make it extend closer to the image
-    const blueLineEndGap = 10
-
-    const positions = [
-      { x: canvas.width * 0.75, y: canvas.height * 0.25, color: "#23AF57" }, // Green - Global Skills Connect
-      { x: canvas.width * 0.75, y: canvas.height * 0.5, color: "#00A9DE" }, // Blue - Interministerial Summit
-      { x: canvas.width * 0.75, y: canvas.height * 0.75, color: "#EC2227" }, // Red - TVET Expo
-    ]
-
-    // Particle system
+    // Particle system for connection
     class Particle {
       x: number
       y: number
       size: number
-      speedX: number
-      speedY: number
       color: string
       alpha: number
       targetX: number
       targetY: number
-      stage: number
-      controlPoint1: { x: number; y: number }
-      controlPoint2: { x: number; y: number }
       progress: number
-      isCurved: boolean
+      direction: number // 1 for EAC to Rwanda, -1 for Rwanda to EAC
 
-      constructor(
-        startX: number,
-        startY: number,
-        targetX: number,
-        targetY: number,
-        color: string,
-        isCurved: boolean,
-        isTopCurve: boolean,
-      ) {
+      constructor(startX: number, startY: number, targetX: number, targetY: number, direction: number) {
         this.x = startX
         this.y = startY
-        this.size = Math.random() * 3 + 1
-        this.speedX = 0
-        this.speedY = 0
-        this.color = color
+        this.size = Math.random() * 4 + 2
+        this.color = direction === 1 ? "#00A9DE" : "#23AF57" // Blue for EAC->Rwanda, Green for Rwanda->EAC
         this.alpha = 1
         this.targetX = targetX
         this.targetY = targetY
-        this.stage = 0 // 0: moving to target, 1: scattering
         this.progress = 0
-        this.isCurved = isCurved
-
-        // Control points for Bezier curve
-        if (isCurved) {
-          const midX = (startX + targetX) / 2
-          if (isTopCurve) {
-            // For top curve (green)
-            this.controlPoint1 = { x: midX, y: startY - 80 }
-            this.controlPoint2 = { x: midX, y: targetY - 80 }
-          } else {
-            // For bottom curve (red)
-            this.controlPoint1 = { x: midX, y: startY + 80 }
-            this.controlPoint2 = { x: midX, y: targetY + 80 }
-          }
-        } else {
-          // Straight line (blue)
-          this.controlPoint1 = { x: 0, y: 0 }
-          this.controlPoint2 = { x: 0, y: 0 }
-        }
+        this.direction = direction
       }
 
       update() {
-        if (this.stage === 0) {
-          // Move along path
-          this.progress += 0.005
+        this.progress += 0.008
 
-          if (this.progress >= 1) {
-            // Reached target, start scattering
-            this.stage = 1
-            this.speedX = (Math.random() - 0.5) * 2
-            this.speedY = (Math.random() - 0.5) * 2
+        if (this.progress >= 1) {
+          // Reset particle
+          this.progress = 0
+          this.alpha = 1
+          if (this.direction === 1) {
+            this.x = eacPosition.x + 80
+            this.y = eacPosition.y
           } else {
-            // Calculate position along path
-            if (this.isCurved) {
-              // Cubic Bezier curve
-              const t = this.progress
-              const mt = 1 - t
-              this.x =
-                mt * mt * mt * this.x +
-                3 * mt * mt * t * this.controlPoint1.x +
-                3 * mt * t * t * this.controlPoint2.x +
-                t * t * t * this.targetX
-              this.y =
-                mt * mt * mt * this.y +
-                3 * mt * mt * t * this.controlPoint1.y +
-                3 * mt * t * t * this.controlPoint2.y +
-                t * t * t * this.targetY
-            } else {
-              // Linear interpolation for straight line
-              this.x = this.x + (this.targetX - this.x) * 0.02
-              this.y = this.y + (this.targetY - this.y) * 0.02
-            }
+            this.x = rwandaPosition.x - 80
+            this.y = rwandaPosition.y
           }
         } else {
-          // Scatter
-          this.x += this.speedX
-          this.y += this.speedY
+          // Move along path with slight curve
+          const t = this.progress
+          const curveHeight = Math.sin(t * Math.PI) * 30 // Gentle curve
 
-          // Fade out
-          this.alpha -= 0.01
-          if (this.alpha < 0) this.alpha = 0
+          this.x = this.x + (this.targetX - this.x) * 0.015
+          this.y = this.y + (this.targetY - this.y) * 0.015 + curveHeight * (this.direction === 1 ? -1 : 1)
+
+          // Fade in and out
+          if (t < 0.2) {
+            this.alpha = t / 0.2
+          } else if (t > 0.8) {
+            this.alpha = (1 - t) / 0.2
+          }
         }
       }
 
@@ -150,150 +94,75 @@ export default function PartnersPage() {
             .toString(16)
             .padStart(2, "0")
         ctx.fill()
+
+        // Add glow effect
+        ctx.shadowColor = this.color
+        ctx.shadowBlur = 10
+        ctx.fill()
+        ctx.shadowBlur = 0
       }
     }
 
-    // Create particle systems for each connection
-    const particleSystems: Particle[][] = []
-    let currentAnimation = 0 // 0: green, 1: blue, 2: red
-    let animationTimer = 0
-    const animationDelay = 300 // Frames between animations
+    // Create particles
+    const particles: Particle[] = []
 
-    // Function to create a new wave of particles
-    const createParticleWave = (targetIndex: number) => {
-      const particles: Particle[] = []
-      const target = positions[targetIndex]
-      const isCurved = targetIndex !== 1 // Curve for green and red, straight for blue
-      const isTopCurve = targetIndex === 0 // Top curve for green
+    // Create particles flowing both ways
+    for (let i = 0; i < 15; i++) {
+      // EAC to Rwanda
+      particles.push(
+        new Particle(
+          eacPosition.x + 80,
+          eacPosition.y + (Math.random() - 0.5) * 20,
+          rwandaPosition.x - 80,
+          rwandaPosition.y + (Math.random() - 0.5) * 20,
+          1,
+        ),
+      )
 
-      // Starting point with gap from RTB logo
-      const startX = rtbPosition.x + 60 // Increased gap from RTB
-      const startY = rtbPosition.y
-
-      // End point with gap from destination logo
-      const endX = target.x - (targetIndex === 1 ? blueLineEndGap : lineEndGap)
-      const endY = target.y
-
-      for (let i = 0; i < 30; i++) {
-        particles.push(
-          new Particle(
-            startX + (Math.random() - 0.5) * 10,
-            startY + (Math.random() - 0.5) * 10,
-            endX,
-            endY,
-            target.color,
-            isCurved,
-            isTopCurve,
-          ),
-        )
-      }
-
-      particleSystems.push(particles)
+      // Rwanda to EAC
+      particles.push(
+        new Particle(
+          rwandaPosition.x - 80,
+          rwandaPosition.y + (Math.random() - 0.5) * 20,
+          eacPosition.x + 80,
+          eacPosition.y + (Math.random() - 0.5) * 20,
+          -1,
+        ),
+      )
     }
 
-    // Animation loop
     let animationFrameId: number
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Starting point with gap from RTB logo
-      const startX = rtbPosition.x + 60 // Increased gap from RTB
-      const startY = rtbPosition.y
-
-      // Draw static connection lines with proper curves and gaps
-      ctx.lineWidth = 1.5
-
-      // Green line (top curve)
+      // Draw connection line
       ctx.beginPath()
-      ctx.moveTo(startX, startY)
-      ctx.bezierCurveTo(
-        (startX + (positions[0].x - lineEndGap)) / 2,
-        startY - 100, // Increased curve height
-        (startX + (positions[0].x - lineEndGap)) / 2,
-        positions[0].y - 100, // Increased curve height
-        positions[0].x - lineEndGap,
-        positions[0].y,
-      )
-      ctx.strokeStyle = positions[0].color + "80" // 50% opacity
-      ctx.stroke()
-
-      // Blue line (straight) - extend closer to the image
-      ctx.beginPath()
-      ctx.moveTo(startX, startY)
-      ctx.lineTo(positions[1].x - blueLineEndGap, positions[1].y)
-      ctx.strokeStyle = positions[1].color + "80" // 50% opacity
-      ctx.stroke()
-
-      // Red line (bottom curve)
-      ctx.beginPath()
-      ctx.moveTo(startX, startY)
-      ctx.bezierCurveTo(
-        (startX + (positions[2].x - lineEndGap)) / 2,
-        startY + 100, // Increased curve height
-        (startX + (positions[2].x - lineEndGap)) / 2,
-        positions[2].y + 100, // Increased curve height
-        positions[2].x - lineEndGap,
-        positions[2].y,
-      )
-      ctx.strokeStyle = positions[2].color + "80" // 50% opacity
+      ctx.moveTo(eacPosition.x + 80, eacPosition.y)
+      ctx.lineTo(rwandaPosition.x - 80, rwandaPosition.y)
+      ctx.strokeStyle = "#E5E7EB"
+      ctx.lineWidth = 2
       ctx.stroke()
 
       // Draw connection dots
-      const dotRadius = 5
-
-      // RTB dot
       ctx.beginPath()
-      ctx.arc(startX, startY, dotRadius, 0, Math.PI * 2)
-      ctx.fillStyle = "#026FB4"
+      ctx.arc(eacPosition.x + 80, eacPosition.y, 6, 0, Math.PI * 2)
+      ctx.fillStyle = "#00A9DE"
       ctx.fill()
 
-      // Target dots
-      positions.forEach((pos, index) => {
-        ctx.beginPath()
-        ctx.arc(pos.x - (index === 1 ? blueLineEndGap : lineEndGap), pos.y, dotRadius, 0, Math.PI * 2)
-        ctx.fillStyle = pos.color
-        ctx.fill()
-      })
+      ctx.beginPath()
+      ctx.arc(rwandaPosition.x - 80, rwandaPosition.y, 6, 0, Math.PI * 2)
+      ctx.fillStyle = "#23AF57"
+      ctx.fill()
 
       // Update and draw particles
-      for (let i = particleSystems.length - 1; i >= 0; i--) {
-        const system = particleSystems[i]
-        let allFaded = true
-
-        for (const particle of system) {
-          particle.update()
-          particle.draw(ctx)
-
-          if (particle.alpha > 0) {
-            allFaded = false
-          }
-        }
-
-        // Remove completely faded particle systems
-        if (allFaded) {
-          particleSystems.splice(i, 1)
-        }
-      }
-
-      // Sequential animation logic
-      animationTimer++
-
-      if (animationTimer >= animationDelay) {
-        animationTimer = 0
-
-        // Move to next animation type
-        currentAnimation = (currentAnimation + 1) % 3
-
-        // Create new particles for current animation
-        createParticleWave(currentAnimation)
-      }
+      particles.forEach((particle) => {
+        particle.update()
+        particle.draw(ctx)
+      })
 
       animationFrameId = requestAnimationFrame(animate)
     }
-
-    // Start with green animation
-    createParticleWave(0)
 
     animate()
 
@@ -304,89 +173,94 @@ export default function PartnersPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
-      <div className="w-full max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Co-Hosted by</h1>
-          <div className="w-full max-w-xl mx-auto mt-4 border-t-2 border-blue-500"></div>
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <motion.h2
+            className="text-4xl font-bold text-gray-900 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Hosted By
+          </motion.h2>
+          <motion.div
+            className="w-24 h-1 bg-[#00A9DE] mx-auto rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: 96 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          />
         </div>
-  
-        <div className="relative border border-gray-200 rounded-lg p-8 mb-12 min-h-[600px] w-full bg-white shadow-lg">
+
+        <div className="relative bg-white rounded-2xl shadow-xl p-8 min-h-[400px] overflow-hidden">
           {/* Animated connections canvas */}
-          <canvas ref={canvasRef} className="absolute inset-0 h-full pointer-events-none" />
-  
-          {/* Larger: Ministry of Education Logo */}
-          <div className="absolute" style={{ left: "15%", top: "10%", transform: "translate(-50%, -50%)" }}>
-            <div className="w-40 h-40 relative"> {/* Increased size */}
-              <Image
-                src="/mineduc.jpg"
-                alt="Republic of Rwanda Ministry of Education"
-                width={200}
-                height={200}
-                className="object-contain"
-              />
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+
+          {/* EAC Logo */}
+          <motion.div
+            className="absolute left-16 top-1/2 transform -translate-y-1/2"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-4 relative">
+                <Image src="/eac.jpeg" alt="East African Community" fill className="object-contain rounded-lg" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">East African Community</h3>
+              <p className="text-sm text-gray-600 max-w-xs">
+                Regional intergovernmental organization promoting integration and cooperation
+              </p>
             </div>
-          </div>
-  
-          {/* Larger: MIFOTRA Logo */}
-          <div className="absolute" style={{ right: "15%", top: "10%", transform: "translate(50%, -50%)" }}>
-            <div className="w-40 h-40 relative"> {/* Increased size */}
-              <Image
-                src="/MIFOTRA.webp"
-                alt="MIFOTRA"
-                width={200}
-                height={200}
-                className="object-contain"
-              />
-              <p className="text-xs text-center mt-1">MIFOTRA</p>
+          </motion.div>
+
+          {/* Republic of Rwanda Logo */}
+          <motion.div
+            className="absolute right-16 top-1/2 transform -translate-y-1/2"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-4 relative">
+                <Image src="/repub.jpeg" alt="Republic of Rwanda" fill className="object-contain rounded-lg" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">Republic of Rwanda</h3>
+              <p className="text-sm text-gray-600 max-w-xs">
+                Host nation championing Kiswahili language development and regional unity
+              </p>
             </div>
-          </div>
-  
-          {/* Smaller logos remain unchanged */}
-          <div className="absolute" style={{ left: "15%", top: "35%", transform: "translate(-50%, -50%)" }}>
-            <div className="w-35 h-25 relative">
-              <Image src="/RTB.png" alt="Rwanda Polytechnic" width={120} height={80} className="object-contain" />
+          </motion.div>
+
+          {/* Partnership Badge */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 1 }}
+          >
+            <div className="bg-gradient-to-r from-[#00A9DE] to-[#23AF57] text-white px-6 py-3 rounded-full shadow-lg">
+              <p className="text-sm font-semibold text-center">Partnership</p>
+              <p className="text-xs text-center opacity-90">for Unity</p>
             </div>
-          </div>
-  
-          <div className="absolute" style={{ left: "15%", top: "50%", transform: "translate(-50%, -50%)" }}>
-            <div className="w-30 h-20 relative">
-              <Image src="/RP.jpg" alt="Rwanda TVET Board" width={100} height={80} className="object-contain" />
-            </div>
-          </div>
-  
-          <div className="absolute" style={{ left: "15%", top: "63%", transform: "translate(-50%, -50%)" }}>
-            <div className="w-32 h-15 relative">
-              <Image src="/PSF.jpg" alt="Private Sector Federation" width={100} height={40} className="object-contain " />
-            </div>
-          </div>
-  
-          <div className="absolute" style={{ left: "15%", top: "85%", transform: "translate(-50%, -50%)" }}>
-            <div className="w-32 h-20 relative pt-4">
-              <Image src="/DP.jpg" alt="Development Partners" width={120} height={80} className="object-contain" />
-            </div>
-          </div>
-  
-          <div className="absolute" style={{ right: "15%", top: "30%", transform: "translate(50%, -50%)" }}>
-            <div className="w-48 h-20 relative">
-              <Image src="/GLOBALSKILLS.jpg" alt="Rwanda FutureSkills Forum - Global Skills Connect" width={180} height={80} className="object-contain bg-green-500" />
-            </div>
-          </div>
-  
-          <div className="absolute" style={{ right: "15%", top: "50%", transform: "translate(50%, -50%)" }}>
-            <div className="w-48 h-20 relative">
-              <Image src="/INTERSUMMIT.jpg" alt="Rwanda FutureSkills Forum - Interministerial Summit" width={180} height={80} className="object-contain bg-blue-500" />
-            </div>
-          </div>
-  
-          <div className="absolute" style={{ right: "15%", top: "75%", transform: "translate(50%, -50%)" }}>
-            <div className="w-48 h-20 relative">
-              <Image src="/TVETEXPO.jpg" alt="Rwanda FutureSkills Forum - TVET Expo" width={180} height={80} className="object-contain bg-red-500" />
-            </div>
-          </div>
+          </motion.div>
         </div>
+
+        {/* Partnership Description */}
+        <motion.div
+          className="text-center mt-8 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+        >
+          <p className="text-lg text-gray-700 leading-relaxed">
+            The 4th EAC World Kiswahili Language Day is a collaborative celebration between the
+            <span className="font-semibold text-[#00A9DE]"> East African Community</span> and the
+            <span className="font-semibold text-[#23AF57]"> Republic of Rwanda</span>, showcasing our shared commitment
+            to promoting Kiswahili as a language of unity, innovation, and regional integration across East Africa.
+          </p>
+        </motion.div>
       </div>
-    </div>
-  );
-  
+    </section>
+  )
 }

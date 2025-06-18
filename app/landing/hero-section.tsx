@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { useRef } from "react"
+import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
+import Link from "next/link"
 
 export default function HeroSection() {
-  const backgroundRef = useRef<HTMLDivElement>(null);
+  const backgroundRef = useRef<HTMLDivElement>(null)
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -35,9 +35,9 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            RWANDA FUTURESKILLS
+            4TH EAC WORLD
             <br />
-            FORUM 2025
+            KISWAHILI LANGUAGE DAY
           </motion.h1>
 
           <motion.p
@@ -46,9 +46,9 @@ export default function HeroSection() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            Join	us	in	Kigali,	Rwanda,	for	the	Rwanda	FutureSkills	Forum	2025,	a	dynamic	platform	
-combining	three	major	events:	TVET	Expo	,	Global	Skills	Connect	(1-5	June),	and	
-Inter	Ministerial	Summit.	
+            Join us at Serena Hotel, Kigali for the 4th EAC World Kiswahili Language Day celebrations. A prestigious
+            gathering celebrating unity through language, featuring youth engagement symposiums, cultural performances,
+            and regional integration initiatives.
           </motion.p>
         </div>
       </div>
@@ -66,7 +66,7 @@ Inter	Ministerial	Summit.
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Global Skills Connect Conference
+            Celebrating Unity Through Language
           </motion.h2>
 
           <motion.p
@@ -75,8 +75,9 @@ Inter	Ministerial	Summit.
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            Global Skills Connect , and Inter Ministerial Summit(4-5 June) . Discover opportunities to connect, learn, and innovate in
-            skills development.
+            July 6-7, 2025 • Serena Hotel, Kigali. Experience the power of Kiswahili in fostering East African
+            integration, youth empowerment, and cultural preservation. Connect with leaders, innovators, and language
+            enthusiasts from across the EAC region.
           </motion.p>
 
           <motion.div
@@ -86,12 +87,12 @@ Inter	Ministerial	Summit.
           >
             <Link href="/delegate">
               <Button className="bg-white text-[#23AF57] hover:bg-transparent hover:text-white hover:border-white border border-transparent transition-all duration-300 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-medium rounded-md">
-                Book Your Spot
+                Book your spot
               </Button>
             </Link>
           </motion.div>
         </div>
       </div>
     </section>
-  );
+  )
 }

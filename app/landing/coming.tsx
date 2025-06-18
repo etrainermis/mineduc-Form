@@ -56,21 +56,67 @@ export default function EnhancedSpeakersComingSoon() {
 
   // Testimonial placeholders
   const testimonials = [
-    {
-      quote:
-        "The Future Skills Forum brings together the brightest minds in TVET education.",
-      author: "Previous Attendee",
-    },
-    {
-      quote:
-        "An incredible opportunity to learn from industry leaders and network with peers.",
-      author: "Education Expert",
-    },
-    {
-      quote: "The speaker lineup is always impressive and insightful.",
-      author: "Industry Partner",
-    },
-  ];
+  {
+    quote:
+      "Kiswahili lugha ya umoja - this celebration truly showcases how language unites our East African community and strengthens our cultural bonds.",
+    author: "Dr. Amina Hassan, Linguistics Professor, University of Dar es Salaam",
+  },
+  {
+    quote:
+      "The EAC World Kiswahili Language Day is a powerful platform that demonstrates how our shared language drives regional integration and youth empowerment.",
+    author: "Hon. Jean Baptiste Habyarimana, Former Minister of Education, Rwanda",
+  },
+  {
+    quote:
+      "This forum brilliantly connects artificial intelligence with inclusive education in Kiswahili, paving the way for technological advancement in our mother tongue.",
+    author: "Prof. Inyani Simala, Theme Chair Moderator",
+  },
+  {
+    quote:
+      "As young innovators, we found incredible inspiration in seeing how Kiswahili can be the vehicle for sustainable development and regional employment opportunities.",
+    author: "Sarah Wanjiku, Youth Innovation Participant, Kenya",
+  },
+  {
+    quote:
+      "The networking opportunities and knowledge exchange sessions created lasting partnerships between TVET institutions across all EAC partner states.",
+    author: "Dr. Joseph Rusanganwa, Education Development Specialist",
+  },
+  {
+    quote:
+      "Witnessing the cultural performances and artistic expressions in Kiswahili reminded us of the rich heritage we share as East Africans.",
+    author: "Ambassador Grace Mukasine, EAC Integration Expert",
+  },
+  {
+    quote:
+      "The symposium's focus on building youth competencies in Kiswahili for regional integration opened new pathways for cross-border collaboration.",
+    author: "Michael Ochieng, Regional Development Coordinator, Uganda",
+  },
+  {
+    quote:
+      "This celebration proves that Kiswahili is not just a language of the past, but the language of our technological and educational future.",
+    author: "Dr. Fatuma Ali, Digital Education Researcher, Somalia",
+  },
+  {
+    quote:
+      "The panel discussions with all EAC partner states demonstrated the true spirit of 'Umoja wa Afrika Mashariki' through our common language.",
+    author: "Prof. Emmanuel Nshimiyimana, Cultural Heritage Specialist, Burundi",
+  },
+  {
+    quote:
+      "From the media briefing to the closing ceremony, every moment reinforced how Kiswahili serves as a bridge for peace and development in our region.",
+    author: "Journalist Marie Claire Uwimana, EAC Media Network",
+  },
+  {
+    quote:
+      "The youth engagement symposium showed us that Kiswahili is the key to unlocking innovation and entrepreneurship across East Africa.",
+    author: "James Mwangi, Young Entrepreneur, Tanzania",
+  },
+  {
+    quote:
+      "This forum perfectly balances tradition with modernity, showing how Kiswahili adapts to serve contemporary educational and technological needs.",
+    author: "Dr. Rebecca Nyong, Language Policy Expert, South Sudan",
+  }
+];
 
   // Rotate testimonials
   useEffect(() => {

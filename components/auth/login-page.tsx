@@ -141,7 +141,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="flex justify-center mb-12">
             <Image
-              src="/logo.svg"
+              src="/eac.jpeg"
               alt="Rwanda FutureSkills Forum Logo"
               width={240}
               height={70}

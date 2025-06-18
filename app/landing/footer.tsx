@@ -40,10 +40,10 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="w-48 h-16 relative">
               <Image
-                src="/Group.png"
+                src="/eac.jpeg"
                 alt="Rwanda FutureSkills Forum Logo"
-                width={192}
-                height={64}
+                width={92}
+                height={34}
                 className="object-contain"
               />
             </div>
@@ -58,7 +58,7 @@ export default function Footer() {
                   className="text-lg font-medium text-gray-900 hover:text-[#026FB4] transition-colors"
                   whileHover={{ scale: 1.05 }}
                 >
-                  +250788721872
+                  +250 788 424 208
                 </motion.a>
               </div>
 
@@ -71,7 +71,7 @@ export default function Footer() {
                   className="text-lg font-medium text-gray-900 hover:text-[#026FB4] transition-colors break-all"
                   whileHover={{ scale: 1.05 }}
                 >
-                  rwandafutureskillsforum@rtb.gov.rw
+                  eaccelebrations@mineduc.gov.rw
                 </motion.a>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-gray-500">© 2025 Rwanda FutureSkills Forum</p>
+          <p className="text-gray-500">© 2025 4th EAC World Kiswahili Language Day Celebrations</p>
         </div>
       </div>
     </footer>

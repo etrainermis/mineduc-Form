@@ -369,7 +369,7 @@ const QUESTIONS: Record<string, Question[]> = {
       id: "gender",
       question: "What is your gender?",
       type: "select",
-      options: ["Male", "Female", "Other"],
+      options: ["Male", "Female"],
       previewLabel: "Gender",
       required: true,
     },
@@ -1880,107 +1880,7 @@ export default function DelegateForm() {
     fetchWorkshops()
   }, [])
 
-  // Update the workshop sections to use morning and afternoon workshops
-  // const renderWorkshops = () => (
-  //   <>
-
-  //     {/* Morning Workshops Section */}
-  //     <div className="mb-8">
-  //       <h3 className="text-lg font-medium text-center mb-4">Morning Session</h3>
-  //       <p className="text-sm text-center text-gray-500 mb-4">Select one workshop for the morning session</p>
-  //       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-  //         {morningWorkshops.map((workshop) => {
-  //           const isFull = workshop.registered >= workshop.capacity;
-  //           const remainingCapacity = workshop.capacity - workshop.registered;
-  //            return (
-  //             <div
-  //               key={`morning-${workshop.id}`}
-  //               className={cn(
-  //                 "border rounded-lg p-4 text-center transition-all",
-  //                 isFull
-  //                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
-  //                   : morningWorkshop === workshop.id
-  //                     ? "border-[#026FB4] bg-blue-50 cursor-pointer"
-  //                     : "border-gray-200 hover:border-gray-300 cursor-pointer",
-  //               )}
-  //               onClick={() => !isFull && handleMorningWorkshopSelect(workshop.id)}
-  //             >
-  //               <div className="flex justify-center mb-3">
-  //                 <div className={cn(
-  //                    "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-  //                    isFull ? "bg-gray-200" : "bg-blue-100"
-  //                 )}>
-  //                   <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-  //                 </div>
-  //               </div>
-  //               <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>{workshop.name}</div>
-  //               <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-  //                 {workshop.venue} | {workshop.schedule}
-  //               </div>
-  //               {/* <div className={cn("text-sm text-gray-600 mb-2 px-2 whitespace-normal", isFull && "text-gray-400")} title={workshop.short_description}>
-  //                  {workshop.short_description}
-  //               </div> */}
-  //                <div className={cn(
-  //                 "text-sm font-medium mt-2",
-  //                 isFull ? "text-red-500" : "text-green-600"
-  //               )}>
-  //                 {isFull ? "Workshop Full" : `${remainingCapacity} spot(s) remaining`}
-  //               </div>
-  //             </div>
-  //           );
-  //         })}
-  //       </div>
-  //     </div>
-
-  //     {/* Afternoon Workshops Section */}
-  //     <div>
-  //       <h3 className="text-lg font-medium text-center mb-4">Afternoon Session</h3>
-  //       <p className="text-sm text-center text-gray-500 mb-4">Select one workshop for the afternoon session</p>
-  //       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-  //         {afternoonWorkshops.map((workshop) => {
-  //            const isFull = workshop.registered >= workshop.capacity;
-  //            const remainingCapacity = workshop.capacity - workshop.registered;
-  //            return (
-  //             <div
-  //               key={`afternoon-${workshop.id}`}
-  //               className={cn(
-  //                 "border rounded-lg p-4 text-center transition-all",
-  //                 isFull
-  //                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
-  //                   : afternoonWorkshop === workshop.id
-  //                     ? "border-[#026FB4] bg-blue-50 cursor-pointer"
-  //                     : "border-gray-200 hover:border-gray-300 cursor-pointer",
-  //               )}
-  //               onClick={() => !isFull && handleAfternoonWorkshopSelect(workshop.id)}
-  //             >
-  //               <div className="flex justify-center mb-3">
-  //                 <div className={cn(
-  //                    "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-  //                    isFull ? "bg-gray-200" : "bg-blue-100"
-  //                 )}>
-  //                   <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-  //                 </div>
-  //               </div>
-  //               <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>{workshop.name}</div>
-  //               <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-  //                 {workshop.venue} | {workshop.schedule}
-  //               </div>
-  //               {/* <div className={cn("text-sm text-gray-600 mb-2 px-2 whitespace-normal", isFull && "text-gray-400")} title={workshop.short_description}>
-  //                  {workshop.short_description}
-  //               </div> */}
-  //               <div className={cn(
-  //                 "text-sm font-medium mt-2",
-  //                 isFull ? "text-red-500" : "text-green-600"
-  //               )}>
-  //                 {isFull ? "Workshop Full" : `${remainingCapacity} spot(s) remaining`}
-  //               </div>
-  //             </div>
-  //           );
-  //         })}
-  //       </div>
-  //     </div>
-  //   </>
-  // )
+ 
 
   return (
     <div className="container mx-auto p-2 sm:p-4 md:p-6">
@@ -2082,7 +1982,7 @@ export default function DelegateForm() {
             </div>
             <div className="mb-10">
               <Link href="/landing">
-                <Image src={FutureSkillsLogo || "/placeholder.svg"} alt="FutureSkills Logo" width={180} height={60} />
+                <Image src="/public/repub.jpeg" alt="FutureSkills Logo" width={180} height={60} />
               </Link>
             </div>
 
