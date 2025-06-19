@@ -71,7 +71,7 @@ export default function Footer() {
                   className="text-lg font-medium text-gray-900 hover:text-[#026FB4] transition-colors break-all"
                   whileHover={{ scale: 1.05 }}
                 >
-                  eaccelebrations@mineduc.gov.rw
+       kiswahiliday2025@mineduc.gov.rw
                 </motion.a>
               </div>
             </div>
