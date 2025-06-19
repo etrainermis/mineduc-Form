@@ -74,7 +74,7 @@ const COUNTRIES = [
   "Colombia",
   "Comoros",
   "Congo",
-  "Cote d’Ivoire",
+  "Cote d'Ivoire",
   "Costa Rica",
   "Croatia",
   "Cuba",
@@ -244,9 +244,9 @@ const EAC_COUNTRIES = [
   "Tanzania",
 ]
 
-// Define the main steps
+// Update the getSteps function to remove dynamic step generation
 const STEPS = [
-  { id: "personal-info", label: "Personal Info", count: 10 },
+  { id: "personal-info", label: "Personal Info", count: 13 }, // Updated count to include travel questions
   { id: "professional-info", label: "Professional Info", count: 3 },
   { id: "event-based-info", label: "Event-Based Info", count: 1 },
 ]
@@ -257,7 +257,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // Phone validation regex (simple version)
 const phoneRegex = /^\+[0-9\s-]{9,}$/
 
-// Update the QUESTIONS object - replace NID/Passport with gender dropdown
+// Update the QUESTIONS object - Add travel info questions
 const QUESTIONS: Record<string, Question[]> = {
   "personal-info": [
     {
@@ -314,6 +314,29 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Partner state",
       required: true,
     },
+    // Travel info questions - conditional based on partner state
+    {
+      id: "arrivalDateTime",
+      question: "What is your arrival date and time?",
+      type: "datetime-local",
+      previewLabel: "Arrival Date & Time",
+      required: true,
+    },
+    {
+      id: "departureDateTime",
+      question: "What is your departure date and time?",
+      type: "datetime-local",
+      previewLabel: "Departure Date & Time",
+      required: true,
+    },
+    {
+      id: "airline",
+      question: "Which airline are you traveling with?",
+      type: "text",
+      placeholder: "e.g., RwandAir, Ethiopian Airlines, etc.",
+      previewLabel: "Airline",
+      required: true,
+    },
     {
       id: "photo",
       question: "Upload a profile photo",
@@ -329,7 +352,6 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Dietary Restrictions",
       required: true,
     },
-
     {
       id: "special-needs",
       question: "Do you have any special needs?",
@@ -354,14 +376,6 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "ID Type",
       required: true,
     },
-    // {
-    //   id: "idNumber",
-    //   question: "Enter your ID number",
-    //   type: "text",
-    //   placeholder: "Enter your ID number",
-    //   previewLabel: "ID Number",
-    //   required: true,
-    // },
   ],
   "professional-info": [
     {
@@ -408,7 +422,7 @@ const QUESTIONS: Record<string, Question[]> = {
 // Add a summary step
 const SUMMARY_STEP = { id: "summary", label: "Review & Submit", count: 1 }
 
-// Define Zod schema for form validation with better error messages
+// Define Zod schema for form validation with better error messages - Updated to include travel fields
 const delegateFormSchema = z.object({
   fullNames: z.string().min(3, "Full name must be at least 3 characters"),
   firstName: z.string().min(1, "First name is required"),
@@ -431,12 +445,27 @@ const delegateFormSchema = z.object({
   }),
   position: z.string().min(1, "Please enter your position"),
   organization: z.string().min(1, "Please enter your organization"),
+  // Travel info fields - optional since they're only required for non-Rwanda delegates
+  arrivalDateTime: z.string().optional(),
+  departureDateTime: z.string().optional(),
+  airline: z.string().optional(),
   sessions: z.string().min(1, "Please select a session"),
 })
 
 type DelegateFormValues = z.infer<typeof delegateFormSchema>
 
+// Add this function to check if current question should be shown
+
 export default function DelegateForm() {
+  // Add this function at the top of the component, before any variable declarations
+  const shouldShowQuestion = (question: Question): boolean => {
+    // Skip travel questions if partner state is Rwanda
+    if (["arrivalDateTime", "departureDateTime", "airline"].includes(question.id)) {
+      return formValues.state !== "Rwanda"
+    }
+    return true
+  }
+
   // State for tracking current step and question
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -494,6 +523,9 @@ export default function DelegateForm() {
       delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP",
       position: "",
       organization: "",
+      arrivalDateTime: "",
+      departureDateTime: "",
+      airline: "",
       sessions: "",
     },
     mode: "onChange",
@@ -510,18 +542,26 @@ export default function DelegateForm() {
 
   // Calculate current step and question
   const currentStep = isSummaryView ? SUMMARY_STEP : STEPS[currentStepIndex]
-  const questions = !isSummaryView ? QUESTIONS[currentStep.id as keyof typeof QUESTIONS] : []
+
+  // Get dynamic steps based on partner state - moved after currentStep declaration
+  const questions = !isSummaryView
+    ? QUESTIONS[currentStep.id as keyof typeof QUESTIONS].filter((q) => shouldShowQuestion(q))
+    : []
   const currentQuestion = !isSummaryView ? questions[currentQuestionIndex] : null
 
-  // Calculate total questions and progress
-  const totalQuestions = STEPS.reduce((acc, step) => acc + QUESTIONS[step.id as keyof typeof QUESTIONS].length, 0)
+  // Calculate total questions and progress - Updated to be dynamic
+  const totalQuestions = STEPS.reduce((acc, step) => {
+    const stepQuestions = QUESTIONS[step.id as keyof typeof QUESTIONS] || []
+    const visibleQuestions = stepQuestions.filter((q) => shouldShowQuestion(q))
+    return acc + visibleQuestions.length
+  }, 0)
   const calculateProgress = () => {
     if (isSummaryView) return 100
 
     // Calculate based on current question position
     let questionsSoFar = 0
     for (let i = 0; i < currentStepIndex; i++) {
-      questionsSoFar += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS].length
+      questionsSoFar += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS]?.length || 0
     }
     questionsSoFar += currentQuestionIndex
 
@@ -573,10 +613,11 @@ export default function DelegateForm() {
       formContainerRef.current.scrollTop = 0
     }
   }, [currentStepIndex, currentQuestionIndex, isSummaryView])
+
   function calculateCurrentQuestionNumber() {
     let questionNumber = 0
     for (let i = 0; i < currentStepIndex; i++) {
-      questionNumber += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS].length
+      questionNumber += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS]?.length || 0
     }
     questionNumber += currentQuestionIndex + 1
     return questionNumber
@@ -676,6 +717,31 @@ export default function DelegateForm() {
       setValidationError("Please select a session")
       return false
     }
+
+    // Special validation for travel info fields
+    if (["arrivalDateTime", "departureDateTime", "airline"].includes(currentQuestion.id)) {
+      // Only validate travel questions if not from Rwanda
+      if (formValues.state === "Rwanda") {
+        return true // Skip validation for Rwanda
+      }
+    }
+
+    if (currentQuestion.id === "arrivalDateTime" || currentQuestion.id === "departureDateTime") {
+      const value = formValues[currentQuestion.id as keyof DelegateFormValues]
+      if (!value || value === "") {
+        setValidationError("Please select a date and time")
+        return false
+      }
+    }
+
+    if (currentQuestion.id === "airline") {
+      const value = formValues.airline
+      if (!value || value.trim() === "") {
+        setValidationError("Please enter the airline name")
+        return false
+      }
+    }
+
     const value = formValues[currentQuestion.id as keyof DelegateFormValues]
     // Check if required
     if (currentQuestion.required && (!value || value === "") && currentQuestion.id !== "sessions") {
@@ -775,7 +841,7 @@ export default function DelegateForm() {
     //   setCurrentQuestionIndex(prevQuestions.length - 1)
     // }
   }
-  // Form submission handler
+  // Form submission handler - Updated to include travel info
   const handleFormSubmit = async () => {
     setIsSubmitting(true)
 
@@ -803,6 +869,14 @@ export default function DelegateForm() {
       formDataToSend.append("partner_state", formValues.state || "")
       formDataToSend.append("organization", formValues.organization || "")
       formDataToSend.append("position", formValues.position || "")
+
+      // Add travel information if not from Rwanda
+      if (formValues.state && formValues.state !== "Rwanda") {
+        formDataToSend.append("arrival_datetime", formValues.arrivalDateTime || "")
+        formDataToSend.append("departure_datetime", formValues.departureDateTime || "")
+        formDataToSend.append("airline", formValues.airline || "")
+      }
+
       // Handle dietary restrictions
       if (formValues.dietary === "Yes" && additionalInfo.dietary?.length > 0) {
         formDataToSend.append("dietary_restrictions", additionalInfo.dietary.join(", "))
@@ -958,6 +1032,17 @@ export default function DelegateForm() {
                 Phone number must start with &apos;+&apos; and be at least 10 characters long
               </p>
             )}
+          </div>
+        )
+      case "datetime-local":
+        return (
+          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
+            <Input
+              type="datetime-local"
+              value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
+              onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
+              className="w-full h-12 text-lg"
+            />
           </div>
         )
       case "textarea":
@@ -1337,7 +1422,7 @@ export default function DelegateForm() {
         return null
     }
   }
-  // Render summary view
+  // Render summary view - Updated to include travel info
   const renderSummaryView = () => {
     if (isSubmitted) {
       return (
@@ -1369,7 +1454,7 @@ export default function DelegateForm() {
                 <h3 className="font-medium text-lg">{step.label}</h3>
               </div>
               <div className="p-4 space-y-3">
-                {QUESTIONS[step.id as keyof typeof QUESTIONS].map((question) => {
+                {QUESTIONS[step.id as keyof typeof QUESTIONS]?.map((question) => {
                   // Fix type error by using type assertion
                   const value = formValues[question.id as keyof DelegateFormValues]
                   let displayValue = value
@@ -1391,6 +1476,12 @@ export default function DelegateForm() {
                     displayValue =
                       value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
+                  } else if (question.id === "arrivalDateTime" || question.id === "departureDateTime") {
+                    // Format datetime for display
+                    if (value) {
+                      const date = new Date(value)
+                      displayValue = date.toLocaleString()
+                    }
                   }
                   return (
                     <div key={question.id} className="flex justify-between border-b pb-2">
@@ -1734,7 +1825,7 @@ export default function DelegateForm() {
                   // Check if the question belongs to the current step
                   let belongsToCurrentStep = false
                   if (!isSummaryView) {
-                    belongsToCurrentStep = QUESTIONS[currentStep.id].some((q) => q.id === key)
+                    belongsToCurrentStep = QUESTIONS[currentStep.id]?.some((q) => q.id === key) || false
                   } else {
                     // In summary view, show all fields
                     belongsToCurrentStep = true
@@ -1762,6 +1853,12 @@ export default function DelegateForm() {
                     displayValue =
                       value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
+                  } else if (key === "arrivalDateTime" || key === "departureDateTime") {
+                    // Format datetime for display
+                    if (value) {
+                      const date = new Date(value)
+                      displayValue = date.toLocaleString()
+                    }
                   }
                   return (
                     <div key={key} className="flex justify-between border-b pb-2">
@@ -1836,7 +1933,7 @@ export default function DelegateForm() {
                   // Check if the question belongs to the current step
                   let belongsToCurrentStep = false
                   if (!isSummaryView) {
-                    belongsToCurrentStep = QUESTIONS[currentStep.id].some((q) => q.id === key)
+                    belongsToCurrentStep = QUESTIONS[currentStep.id]?.some((q) => q.id === key) || false
                   } else {
                     // In summary view, show all fields
                     belongsToCurrentStep = true
@@ -1864,6 +1961,12 @@ export default function DelegateForm() {
                     displayValue =
                       value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
+                  } else if (key === "arrivalDateTime" || key === "departureDateTime") {
+                    // Format datetime for display
+                    if (value) {
+                      const date = new Date(value)
+                      displayValue = date.toLocaleString()
+                    }
                   }
                   return (
                     <div key={key} className="flex justify-between border-b pb-2">
