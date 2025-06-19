@@ -308,6 +308,13 @@ const QUESTIONS: Record<string, Question[]> = {
       required: true,
     },
     {
+      id: "state",
+      question: "What is your partner state ?",
+      type: "state",
+      previewLabel: "Partner state",
+      required: true,
+    },
+    {
       id: "photo",
       question: "Upload a profile photo",
       type: "file",
@@ -367,7 +374,7 @@ const QUESTIONS: Record<string, Question[]> = {
         "Development Partner Representative-DP(Multilateral organisations,Donors)",
         "Private Sector Representative-ENT(Private Institutions,Media houses)",
         "Expert/Professional Representative-EXP(Independent Experts,Consultants,Advisors)",
-        "Civil Society Representative-CSO(Associations,Youth Forums)"
+        "Civil Society Representative-CSO(Associations,Youth Forums)",
       ],
       previewLabel: "Delegate Type",
       required: true,
@@ -412,6 +419,7 @@ const delegateFormSchema = z.object({
     .regex(/^\+[0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
   gender: z.string().min(1, "Please select your gender"),
   country: z.string().min(1, "Please select your nationality"),
+  state: z.string().min(1, "Please select your partner state"),
   photo: z.any().optional(),
   dietary: z.string().min(1, "Please indicate if you have dietary restrictions"),
   "special-needs": z.string().min(1, "Please indicate if you have any special needs"),
@@ -476,6 +484,7 @@ export default function DelegateForm() {
       phoneNumber: "",
       gender: "",
       country: "",
+      state: "",
       photo: undefined,
       dietary: "",
       "special-needs": "",
@@ -757,14 +766,14 @@ export default function DelegateForm() {
       setIsSummaryView(false)
       return
     }
-    setValidationError(null)
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1)
-    } else if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1)
-      const prevQuestions = QUESTIONS[STEPS[currentStepIndex - 1].id as keyof typeof QUESTIONS]
-      setCurrentQuestionIndex(prevQuestions.length - 1)
-    }
+    // setValidationError(null)
+    // if (currentQuestionIndex > 0) {
+    //   setCurrentQuestionIndex(currentQuestionIndex - 1)
+    // } else if (currentStepIndex > 0) {
+    //   setCurrentStepIndex(currentStepIndex - 1)
+    //   const prevQuestions = QUESTIONS[STEPS[currentStepIndex - 1].id as keyof QUESTIONS]
+    //   setCurrentQuestionIndex(prevQuestions.length - 1)
+    // }
   }
   // Form submission handler
   const handleFormSubmit = async () => {
@@ -791,6 +800,7 @@ export default function DelegateForm() {
       formDataToSend.append("delegate_type", mappedDelegateType)
       // Additional information
       formDataToSend.append("country", formValues.country || "")
+      formDataToSend.append("partner_state", formValues.state || "")
       formDataToSend.append("organization", formValues.organization || "")
       formDataToSend.append("position", formValues.position || "")
       // Handle dietary restrictions
@@ -1015,6 +1025,26 @@ export default function DelegateForm() {
               )}
             </div>
             {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message as string}</p>}
+          </div>
+        )
+      case "state":
+        return (
+          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
+            <Select value={formValues.state || ""} onValueChange={(value) => handleInputChange("state", value)}>
+              <SelectTrigger
+                className={cn("w-full h-12 text-lg", errors.state ? "border-red-500 focus-visible:ring-red-500" : "")}
+              >
+                <SelectValue placeholder="Select EAC Partner State" />
+              </SelectTrigger>
+              <SelectContent>
+                {EAC_COUNTRIES.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state.message as string}</p>}
           </div>
         )
       case "sessions":
