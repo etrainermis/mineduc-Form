@@ -13,18 +13,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { ImagePlus, Plus, AlertCircle, ChevronLeft, ChevronRight, X, CheckCircle2, ArrowLeft } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { toast, Toaster } from "sonner"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-
-// Logo image
-import FutureSkillsLogo from "@/public/global.png"
 import Link from "next/link"
 import { BACKEND_URL } from "@/lib/config"
-
-
 
 // Define question interface
 interface Question {
@@ -37,33 +31,6 @@ interface Question {
   required?: boolean
   validation?: (value: string) => string | null
   description?: string
-  
-}
-
-// Define workshop interface
-interface Workshop {
-  id: string
-  title: string
-  name: string
-  icon: string
-  capacity: number
-  registered: number
-  venue: string
-  schedule: string
-  // short_description: string
-}
-
-// Define round table interface
-interface RoundTable {
-  id: string
-  name: string
-  description: string
-}
-
-// Define activity interface
-interface Activity {
-  id: string
-  name: string
 }
 
 // Define countries
@@ -265,11 +232,21 @@ const COUNTRIES = [
   "Zambia",
   "Zimbabwe",
 ]
-
+// Define EAC Partner States
+const EAC_COUNTRIES = [
+  "Burundi",
+  "Democratic Republic of Congo",
+  "Kenya",
+  "Rwanda",
+  "Somalia",
+  "South Sudan",
+  "Uganda",
+  "Tanzania",
+]
 
 // Define the main steps
 const STEPS = [
-  { id: "personal-info", label: "Personal Info", count: 8 },
+  { id: "personal-info", label: "Personal Info", count: 10 },
   { id: "professional-info", label: "Professional Info", count: 3 },
   { id: "event-based-info", label: "Event-Based Info", count: 1 },
 ]
@@ -278,62 +255,7 @@ const STEPS = [
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Phone validation regex (simple version)
-const phoneRegex = /^\+[0-9\s-]{9,}$/;
-
-
-// Define workshops (will be overridden by API data)
-// const WORKSHOPS: Workshop[] = []
-// console.log(WORKSHOPS)
-
-// Define round tables
-const ROUND_TABLES: RoundTable[] = [
-  {
-    id: "rt1",
-    name: "RT1: Governance",
-    description: "Planning, management, financing, quality assurance of TVET",
-  },
-  {
-    id: "rt2",
-    name: "RT2: Content",
-    description: "Occupational standards, TVET programs and curricula development/revision",
-  },
-  {
-    id: "rt3",
-    name: "RT3: Training",
-    description: "Training, CPD and retention of TVET teacher and trainers",
-  },
-  {
-    id: "rt4",
-    name: "RT4: Assessment",
-    description: "Competence-based assessment, skills/trade tests, RPL",
-  },
-  {
-    id: "rt5",
-    name: "RT5: Dual Training",
-    description: "Dual training for full qualification or short courses",
-  },
-  {
-    id: "rt6",
-    name: "RT6: Industry Exposure",
-    description: "Industry-based training and industrial attachments",
-  },
-  {
-    id: "rt7",
-    name: "RT7: Entrepreneurship",
-    description: "Entrepreneurship, business development and soft skills",
-  },
-  {
-    id: "rt8",
-    name: "RT8: Labour Market Transition",
-    description: "Employability of TVET graduates, entrepreneurship and soft skills",
-  },
-]
-
-// Update activities title
-const ACTIVITIES: Activity[] = [
-  { id: "marone", name: "Network and Knowledge Exchange 2 - Marketplace 1" },
-  { id: "martwo", name: "Network and Knowledge Exchange 2 - Marketplace 2" },
-]
+const phoneRegex = /^\+[0-9\s-]{9,}$/
 
 // Update the QUESTIONS object - replace NID/Passport with gender dropdown
 const QUESTIONS: Record<string, Question[]> = {
@@ -344,13 +266,13 @@ const QUESTIONS: Record<string, Question[]> = {
       type: "name",
       previewLabel: "Names",
       required: true,
-    validation: (value) => {
-      if (!value) {
-        return "Both first and last name are required";
-      }
-      return null;
+      validation: (value) => {
+        if (!value) {
+          return "Both first and last name are required"
+        }
+        return null
+      },
     },
-  },
     {
       id: "email",
       question: "Provide your email",
@@ -367,7 +289,8 @@ const QUESTIONS: Record<string, Question[]> = {
       placeholder: "+250 798 123 432",
       previewLabel: "Tel N°",
       required: true,
-      validation: (value) => (!phoneRegex.test(value) ? "Please enter a valid phone number(Format: +250 798 123 432)" : null),
+      validation: (value) =>
+        !phoneRegex.test(value) ? "Please enter a valid phone number(Format: +250 798 123 432)" : null,
     },
     {
       id: "gender",
@@ -399,6 +322,7 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Dietary Restrictions",
       required: true,
     },
+
     {
       id: "special-needs",
       question: "Do you have any special needs?",
@@ -407,6 +331,30 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Special Needs",
       required: true,
     },
+    {
+      id: "accommodation",
+      question: "What is your accommodation status?",
+      type: "radio",
+      options: ["Booked", "Not booked", "Other"],
+      previewLabel: "Accommodation",
+      required: true,
+    },
+    {
+      id: "idType",
+      question: "ID Type",
+      type: "radio",
+      options: ["National ID Number", "Passport Number"],
+      previewLabel: "ID Type",
+      required: true,
+    },
+    // {
+    //   id: "idNumber",
+    //   question: "Enter your ID number",
+    //   type: "text",
+    //   placeholder: "Enter your ID number",
+    //   previewLabel: "ID Number",
+    //   required: true,
+    // },
   ],
   "professional-info": [
     {
@@ -414,11 +362,12 @@ const QUESTIONS: Record<string, Question[]> = {
       question: "What type of delegate are you?",
       type: "select",
       options: [
-        "Public Sector Representative(GOV)",
-        "TVET Providers Representative(SCH/PLT)",
-        "Donor and Partner Representative(DP)",
-        "Private Sector Representative(ENT)",
-        "TVET Expert Representative(EXP)",
+        "Public Sector Representative-GOV(EAC Delegates,Embassies)",
+        "Education Sector Representative-SCH/PLT(Education Institutions)",
+        "Development Partner Representative-DP(Multilateral organisations,Donors)",
+        "Private Sector Representative-ENT(Private Institutions,Media houses)",
+        "Expert/Professional Representative-EXP(Independent Experts,Consultants,Advisors)",
+        "Civil Society Representative-CSO(Associations,Youth Forums)"
       ],
       previewLabel: "Delegate Type",
       required: true,
@@ -440,14 +389,12 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
   "event-based-info": [
     {
-      id: "workshops",
-      question: "Select workshops you want to attend",
-      type: "workshops",
-      previewLabel: "Workshops",
+      id: "sessions",
+      question: "Select sessions you want to attend",
+      type: "sessions",
+      previewLabel: "Sessions",
       required: true,
-      // description: "Global Skills Event",
     },
-    // Removed roundTables and activities
   ],
 }
 
@@ -460,20 +407,23 @@ const delegateFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
-  phoneNumber: z.string().regex(/^\+[0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
+  phoneNumber: z
+    .string()
+    .regex(/^\+[0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
   gender: z.string().min(1, "Please select your gender"),
   country: z.string().min(1, "Please select your nationality"),
   photo: z.any().optional(),
   dietary: z.string().min(1, "Please indicate if you have dietary restrictions"),
   "special-needs": z.string().min(1, "Please indicate if you have any special needs"),
+  accommodation: z.string().min(1, "Please select your accommodation status"),
+  idType: z.string().min(1, "Please select your ID type"),
+  idNumber: z.string().min(1, "Please enter your ID number"),
   delegateType: z.enum(["GOV", "SCH/PLT", "DP", "ENT", "EXP"], {
     errorMap: () => ({ message: "Please select a valid delegate type" }),
   }),
   position: z.string().min(1, "Please enter your position"),
   organization: z.string().min(1, "Please enter your organization"),
-  workshops: z.array(z.string()).min(1, "Please select at least one workshop"),
-  roundTables: z.array(z.string()).optional(),
-  activities: z.array(z.string()).optional(),
+  sessions: z.string().min(1, "Please select a session"),
 })
 
 type DelegateFormValues = z.infer<typeof delegateFormSchema>
@@ -492,63 +442,54 @@ export default function DelegateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSummaryView, setIsSummaryView] = useState(false)
-  const [, setSelectedWorkshops] = useState<string[]>([])
-  // New state for morning and afternoon workshop selections
-  const [morningWorkshop, setMorningWorkshop] = useState<string | null>(null)
-  const [afternoonWorkshop, setAfternoonWorkshop] = useState<string | null>(null)
-  // Add formData state
   const [formData, setFormData] = useState<Partial<DelegateFormValues>>({})
 
   // Add workshops state from API
-  const [workshops, setWorkshops] = useState<Workshop[]>([])
-  const [morningWorkshops, setMorningWorkshops] = useState<Workshop[]>([])
-  const [afternoonWorkshops, setAfternoonWorkshops] = useState<Workshop[]>([])
-  const [isLoadingWorkshops, setIsLoadingWorkshops] = useState(false)
-  const [workshopsError, setWorkshopsError] = useState<string | null>(null)
-
-  const [selectedRoundTables, setSelectedRoundTables] = useState<string[]>([])
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([])
   const [, setAnimationPosition] = useState(0)
   const [countrySearch, setCountrySearch] = useState("")
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [filteredCountries, setFilteredCountries] = useState<string[]>(COUNTRIES)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [accommodationPlace, setAccommodationPlace] = useState("")
+  const [accommodationReason, setAccommodationReason] = useState("")
 
   // Add state for registration ID
   const [registrationId, setRegistrationId] = useState<string>("")
 
-// Setup React Hook Form
-const {
-  // control,
-  // handleSubmit: hookFormSubmit,
-  setValue,
-  watch,
-  formState: { errors },
-  // trigger,
-} = useForm<DelegateFormValues>({
-  resolver: zodResolver(delegateFormSchema),
-  defaultValues: {
-    fullNames: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    gender: "",
-    country: "",
-    photo: undefined,
-    dietary: "",
-    "special-needs": "",
-    delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP",
-    position: "",
-    organization: "",
-    workshops: [],
-    roundTables: [],
-    activities: [],
-  },
-  mode: "onChange",
-  reValidateMode: "onChange",
-})
+  const [idType, setIdType] = useState("")
+  const [accommodationDetails, setAccommodationDetails] = useState("")
 
+  const countryInputRef = useRef<HTMLInputElement>(null)
+
+  // Setup React Hook Form
+  const {
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<DelegateFormValues>({
+    resolver: zodResolver(delegateFormSchema),
+    defaultValues: {
+      fullNames: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phoneNumber: "",
+      gender: "",
+      country: "",
+      photo: undefined,
+      dietary: "",
+      "special-needs": "",
+      accommodation: "",
+      idType: "",
+      idNumber: "",
+      delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP",
+      position: "",
+      organization: "",
+      sessions: "",
+    },
+    mode: "onChange",
+    reValidateMode: "onChange",
+  })
 
   // Watch form values
   const formValues = watch()
@@ -557,7 +498,6 @@ const {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const formContainerRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
-  const countryInputRef = useRef<HTMLInputElement>(null)
 
   // Calculate current step and question
   const currentStep = isSummaryView ? SUMMARY_STEP : STEPS[currentStepIndex]
@@ -566,19 +506,6 @@ const {
 
   // Calculate total questions and progress
   const totalQuestions = STEPS.reduce((acc, step) => acc + QUESTIONS[step.id as keyof typeof QUESTIONS].length, 0)
-
-  // Calculate completed questions count
-  // const completedQuestionsCount = Object.keys(formValues).filter((key) => {
-  //   const value = formValues[key as keyof DelegateFormValues]
-  //   if (Array.isArray(value)) {
-  //     return value.length > 0
-  //   }
-  //   return value !== undefined && value !== ""
-  // }).length
-
-  // console.log(completedQuestionsCount)
-
-  // Calculate progress percentage - start at 0% and increment uniformly
   const calculateProgress = () => {
     if (isSummaryView) return 100
 
@@ -600,10 +527,6 @@ const {
 
   // Calculate current question number
   const currentQuestionNumber = calculateCurrentQuestionNumber()
-
-  // Calculate selection capacity for round tables
-
-
   // Animation for the border
   useEffect(() => {
     const interval = setInterval(() => {
@@ -611,47 +534,6 @@ const {
     }, 50)
     return () => clearInterval(interval)
   }, [])
-
-  // Update form data when workshops, round tables, or activities change
-  useEffect(() => {
-    // Update workshops in form data when morning or afternoon selections change
-    if (morningWorkshop || afternoonWorkshop) {
-      const workshopSelections = [
-        ...(morningWorkshop ? [morningWorkshop] : []),
-        ...(afternoonWorkshop ? [afternoonWorkshop] : []),
-      ]
-  
-      setValue("workshops", workshopSelections)
-      setFormData((prev) => ({
-        ...prev,
-        workshops: workshopSelections,
-      }))
-  
-      // Update selectedWorkshops state for preview
-      setSelectedWorkshops(workshopSelections)
-      console.log("Selected workshops:", workshopSelections) // ✅ safe to log directly
-    } else {
-      setValue("workshops", [])
-      setFormData((prev) => ({
-        ...prev,
-        workshops: [],
-      }))
-      setSelectedWorkshops([])
-    }
-  }, [morningWorkshop, afternoonWorkshop, setValue]) // ✅ No warning now
-  
-
-  useEffect(() => {
-    if (selectedRoundTables.length > 0) {
-      setValue("roundTables", selectedRoundTables)
-    }
-  }, [selectedRoundTables, setValue])
-
-  useEffect(() => {
-    if (selectedActivities.length > 0) {
-      setValue("activities", selectedActivities)
-    }
-  }, [selectedActivities, setValue])
 
   // Filter countries based on search
   useEffect(() => {
@@ -682,7 +564,6 @@ const {
       formContainerRef.current.scrollTop = 0
     }
   }, [currentStepIndex, currentQuestionIndex, isSummaryView])
-
   function calculateCurrentQuestionNumber() {
     let questionNumber = 0
     for (let i = 0; i < currentStepIndex; i++) {
@@ -691,7 +572,6 @@ const {
     questionNumber += currentQuestionIndex + 1
     return questionNumber
   }
-
   // Handle form input changes
   const handleInputChange = (id: string, value: string) => {
     setValidationError(null)
@@ -702,14 +582,12 @@ const {
   // Handle name input changes
   const handleNameChange = (field: "firstName" | "lastName", value: string) => {
     setValidationError(null)
-
     // Update formData state
     setFormData((prev) => ({
       ...prev,
       [field]: value,
       fullNames: field === "firstName" ? `${value} ${prev.lastName || ""}` : `${prev.firstName || ""} ${value}`,
     }))
-
     // Update React Hook Form values
     setValue(field, value)
     setValue(
@@ -717,67 +595,12 @@ const {
       field === "firstName" ? `${value} ${formData.lastName || ""}` : `${formData.firstName || ""} ${value}`,
     )
   }
-
   // Handle radio button changes
   const handleRadioChange = (id: string, value: string) => {
     setValidationError(null)
     setValue(id as keyof DelegateFormValues, value)
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
-
-  // Handle morning workshop selection
-  const handleMorningWorkshopSelect = (workshopId: string) => {
-    const workshop = morningWorkshops.find(w => w.id === workshopId);
-    // Check if workshop exists and if it's full
-    if (workshop && workshop.registered >= workshop.capacity) {
-      toast.error("This workshop is full and cannot be selected.");
-      return; // Prevent selection if full
-    }
-    setValidationError(null)
-    setMorningWorkshop(morningWorkshop === workshopId ? null : workshopId)
-  }
-
-  // Handle afternoon workshop selection
-  const handleAfternoonWorkshopSelect = (workshopId: string) => {
-    const workshop = afternoonWorkshops.find(w => w.id === workshopId);
-    // Check if workshop exists and if it's full
-    if (workshop && workshop.registered >= workshop.capacity) {
-      toast.error("This workshop is full and cannot be selected.");
-      return; // Prevent selection if full
-    }
-    setValidationError(null)
-    setAfternoonWorkshop(afternoonWorkshop === workshopId ? null : workshopId)
-  }
-
-  // Handle round table selection
-  const handleRoundTableToggle = (roundTableId: string) => {
-    setValidationError(null);
-    const currentSelection = selectedRoundTables;
-    let newRoundTables;
-    if (currentSelection.includes(roundTableId)) {
-      // Remove the ID if it exists
-      newRoundTables = currentSelection.filter((id) => id !== roundTableId);
-    } else {
-      // Add the ID if it doesn't exist
-      newRoundTables = [...currentSelection, roundTableId];
-    }
-    setSelectedRoundTables(newRoundTables);
-    setValue("roundTables", newRoundTables);
-  };
-
-  // Handle activity selection
-  const handleActivityToggle = (activityId: string) => {
-    if (selectedActivities.includes(activityId)) {
-      const newActivities = selectedActivities.filter((id) => id !== activityId)
-      setSelectedActivities(newActivities)
-      setValue("activities", newActivities)
-    } else {
-      const newActivities = [...selectedActivities, activityId]
-      setSelectedActivities(newActivities)
-      setValue("activities", newActivities)
-    }
-  }
-
   // Handle country selection
   const handleCountrySelect = (country: string) => {
     handleInputChange("country", country)
@@ -799,12 +622,10 @@ const {
       reader.readAsDataURL(file)
     }
   }
-
   // Handle file upload area click
   const handleUploadAreaClick = () => {
     fileInputRef.current?.click()
   }
-
   // Handle adding dietary need
   const handleAddDietaryNeed = () => {
     if (newDietaryNeed.trim() !== "") {
@@ -815,7 +636,6 @@ const {
       setNewDietaryNeed("")
     }
   }
-
   // Handle adding special need
   const handleAddSpecialNeed = () => {
     if (newSpecialNeed.trim() !== "") {
@@ -826,7 +646,6 @@ const {
       setNewSpecialNeed("")
     }
   }
-
   // Validate current question
   const validateCurrentQuestion = (): boolean => {
     if (!currentQuestion) return true
@@ -837,41 +656,23 @@ const {
         setValidationError("Both first and last name are required")
         return false
       }
-
       // Set the fullNames field for form validation
       setValue("firstName", formData.firstName || "")
       setValue("lastName", formData.lastName || "")
       setValue("fullNames", `${formData.firstName || ""} ${formData.lastName || ""}`)
       return true
     }
-
-    // Special validation for workshops
-    if (currentQuestion.id === "workshops" && !morningWorkshop && !afternoonWorkshop) {
-      setValidationError("Please select at least one workshop")
+    // Special validation for sessions
+    if (currentQuestion.id === "sessions" && !formValues.sessions) {
+      setValidationError("Please select a session")
       return false
     }
-
-    // Special validation for round tables
-    if (currentQuestion.id === "roundTables" && selectedRoundTables.length === 0) {
-      setValidationError("Please select at least one round table")
-      return false
-    }
-
-    // Activities are optional, so no validation needed
-
     const value = formValues[currentQuestion.id as keyof DelegateFormValues]
-
     // Check if required
-    if (
-      currentQuestion.required &&
-      (!value || value === "") &&
-      currentQuestion.id !== "workshops" &&
-      currentQuestion.id !== "roundTables"
-    ) {
+    if (currentQuestion.required && (!value || value === "") && currentQuestion.id !== "sessions") {
       setValidationError("This field is required")
       return false
     }
-
     // Check custom validation
     if (value && currentQuestion.validation) {
       const error = currentQuestion.validation(value)
@@ -880,21 +681,41 @@ const {
         return false
       }
     }
-
     // Special validation for dietary and special needs
     if (currentQuestion.id === "dietary" && value === "Yes" && additionalInfo.dietary.length === 0) {
       setValidationError("Please add at least one dietary restriction")
       return false
     }
-
     if (currentQuestion.id === "special-needs" && value === "Yes" && additionalInfo["special-needs"].length === 0) {
       setValidationError("Please add at least one special need")
       return false
     }
 
+    // Special validation for accommodation details
+    if (currentQuestion.id === "accommodation") {
+      if ((value === "Booked" || value === "Other") && !accommodationDetails.trim()) {
+        setValidationError(
+          `Please specify your ${value === "Booked" ? "hotel/accommodation place" : "accommodation arrangement"}`,
+        )
+        return false
+      }
+    }
+
+    // Special validation for ID number based on type
+    if (currentQuestion.id === "idNumber" && formValues.idType && formValues.idNumber) {
+      const idNumber = formValues.idNumber || ""
+      if (formValues.idType === "National ID Number" && idNumber.length !== 16) {
+        setValidationError("National ID must be exactly 16 characters")
+        return false
+      }
+      if (formValues.idType === "Passport Number" && idNumber.length < 6) {
+        setValidationError("Passport number must be at least 6 characters")
+        return false
+      }
+    }
+
     return true
   }
-
   // Handle next question
   const handleNext = async () => {
     if (isSummaryView) {
@@ -909,14 +730,11 @@ const {
       }
       return
     }
-
     if (!validateCurrentQuestion()) {
       return
     }
-
     // Clear validation error since we're moving to next question
     setValidationError(null)
-
     // Move to next question/step
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
@@ -927,23 +745,19 @@ const {
       setIsSummaryView(true)
     }
   }
-
   // Add a direct access button for testing
   const debugReset = () => {
     setCurrentStepIndex(0)
     setCurrentQuestionIndex(0)
     setIsSummaryView(false)
   }
-
   // Handle previous question
   const handleBack = () => {
     if (isSummaryView) {
       setIsSummaryView(false)
       return
     }
-
     setValidationError(null)
-
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1)
     } else if (currentStepIndex > 0) {
@@ -952,160 +766,129 @@ const {
       setCurrentQuestionIndex(prevQuestions.length - 1)
     }
   }
-
   // Form submission handler
-   // Form submission handler
-   const handleFormSubmit = async () => {
+  const handleFormSubmit = async () => {
     setIsSubmitting(true)
-    
+
     try {
       const formDataToSend = new FormData()
-      formDataToSend.append('firstName', formValues.firstName || '')
-      formDataToSend.append('lastName', formValues.lastName || '')
-      formDataToSend.append('email', formValues.email || '')
-      formDataToSend.append('username', formValues.email || '')
-      formDataToSend.append('myGender', formValues.gender || 'Not Specified')
-      formDataToSend.append('role', 'DELEGATE')
-      formDataToSend.append('phonenumber', formValues.phoneNumber || '')
-      
+      formDataToSend.append("firstName", formValues.firstName || "")
+      formDataToSend.append("lastName", formValues.lastName || "")
+      formDataToSend.append("email", formValues.email || "")
+      formDataToSend.append("username", formValues.email || "")
+      formDataToSend.append("myGender", formValues.gender || "Not Specified")
+      formDataToSend.append("role", "DELEGATE")
+      formDataToSend.append("phonenumber", formValues.phoneNumber || "")
       // Map delegate type to expected backend values
       const delegateTypeMap: Record<string, string> = {
-        'Public Sector Representative(GOV)': 'GOV',
-        'TVET Providers Representative(SCH/PLT)': 'SCH/PLT', 
-        'Donor and Partner Representative(DP)': 'DP',
-        'Private Sector Representative(ENT)': 'ENT',
-        'TVET Expert Representative(EXP)': 'EXP'
+        "Public Sector Representative(GOV)": "GOV",
+        "TVET Providers Representative(SCH/PLT)": "SCH/PLT",
+        "Donor and Partner Representative(DP)": "DP",
+        "Private Sector Representative(ENT)": "ENT",
+        "TVET Expert Representative(EXP)": "EXP",
       }
-      
       const mappedDelegateType = delegateTypeMap[formValues.delegateType] || formValues.delegateType
-      formDataToSend.append('delegate_type', mappedDelegateType)
-      
+      formDataToSend.append("delegate_type", mappedDelegateType)
       // Additional information
-      formDataToSend.append('country', formValues.country || '')
-      formDataToSend.append('organization', formValues.organization || '')
-      formDataToSend.append('position', formValues.position || '')
-  
-      
+      formDataToSend.append("country", formValues.country || "")
+      formDataToSend.append("organization", formValues.organization || "")
+      formDataToSend.append("position", formValues.position || "")
       // Handle dietary restrictions
-      if (formValues.dietary === 'Yes' && additionalInfo.dietary?.length > 0) {
-        formDataToSend.append('dietary_restrictions', additionalInfo.dietary.join(', '))
+      if (formValues.dietary === "Yes" && additionalInfo.dietary?.length > 0) {
+        formDataToSend.append("dietary_restrictions", additionalInfo.dietary.join(", "))
       } else {
-        formDataToSend.append('dietary_restrictions', 'No')
+        formDataToSend.append("dietary_restrictions", "No")
       }
-
       // Handle special needs
-      if (formValues['special-needs'] === 'Yes' && additionalInfo['special-needs']?.length > 0) {
-        formDataToSend.append('special_needs', additionalInfo['special-needs'].join(', '))
+      if (formValues["special-needs"] === "Yes" && additionalInfo["special-needs"]?.length > 0) {
+        formDataToSend.append("special_needs", additionalInfo["special-needs"].join(", "))
       } else {
-        formDataToSend.append('special_needs', 'No')
+        formDataToSend.append("special_needs", "No")
       }
-
-      formDataToSend.append('selected_event', 'Global Skill Connect')
-
+      formDataToSend.append("selected_event", "Global Skill Connect")
       // Handle profile picture
       if (formValues.photo) {
-        formDataToSend.append('profile_picture_url', formValues.photo)
+        formDataToSend.append("profile_picture_url", formValues.photo)
       }
-
-      if (morningWorkshop) {
-        formDataToSend.append('workshopIds', morningWorkshop)
+      if (formValues.sessions) {
+        formDataToSend.append("workshopIds", formValues.sessions)
       }
-      if (afternoonWorkshop) {
-        formDataToSend.append('workshopIds', afternoonWorkshop)
+      formDataToSend.append("accommodation_status", formValues.accommodation || "")
+      if (formValues.accommodation === "Booked" && accommodationPlace) {
+        formDataToSend.append("accommodation_place", accommodationPlace)
+      } else if (formValues.accommodation === "Other" && accommodationReason) {
+        formDataToSend.append("accommodation_reason", accommodationReason)
       }
-
-      // Handle round tables
-      if (selectedRoundTables.length > 0) {
-        selectedRoundTables.forEach(id => {
-          formDataToSend.append('selected_round_tables[]', getRoundTableName(id))
-        })
-      }
-
-      // Handle activities
-      if (selectedActivities.length > 0) {
-        selectedActivities.forEach(id => {
-          formDataToSend.append('selected_activities[]', getActivityName(id))
-        })
-      }
-
+      formDataToSend.append("id_type", formValues.idType || "")
+      formDataToSend.append("id_number", formValues.idNumber || "")
+      formDataToSend.append("accommodation_details", accommodationDetails)
       // Log form data before sending
-      console.log('Form data being sent:', Object.fromEntries(formDataToSend))
-
+      console.log("Form data being sent:", Object.fromEntries(formDataToSend))
       // Add timeout to the fetch request
       const controller = new AbortController()
       const requestTimeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-
       const response = await fetch(`${BACKEND_URL}/delegates`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'accept': '*/*'
+          accept: "*/*",
         },
         body: formDataToSend,
-        signal: controller.signal
+        signal: controller.signal,
       })
-
       clearTimeout(requestTimeout)
-
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('Server error:', errorData)
+        console.error("Server error:", errorData)
         throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`)
       }
-
       const responseData = await response.json()
-      console.log('Registration successful:', responseData)
-
+      console.log("Registration successful:", responseData)
       // Generate random registration ID between 001 and 500
       const randomNumber = Math.floor(Math.random() * 500) + 1
-      const regId = `RFF${String(randomNumber).padStart(3, '0')}`
+      const regId = `RFF${String(randomNumber).padStart(3, "0")}`
       setRegistrationId(regId)
-
       setIsSubmitted(true)
-      toast.success('Registration submitted successfully!', {
+      toast.success("Registration submitted successfully!", {
         style: {
-          backgroundColor: '#dcfce7',
-          color: '#166534',
-          border: '1px solid #86efac',
-          borderRadius: '8px',
-          padding: '16px'
+          backgroundColor: "#dcfce7",
+          color: "#166534",
+          border: "1px solid #86efac",
+          borderRadius: "8px",
+          padding: "16px",
         },
         dismissible: true,
-        duration: 4000
+        duration: 4000,
       })
-
     } catch (error) {
-      console.error('Registration error:', error)
-      
-      let errorMessage = 'Failed to submit registration'
+      console.error("Registration error:", error)
+
+      let errorMessage = "Failed to submit registration"
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMessage = 'Registration request timed out. Please try again.'
+        if (error.name === "AbortError") {
+          errorMessage = "Registration request timed out. Please try again."
         } else {
           errorMessage = error.message
         }
       }
-      
       toast.error(errorMessage, {
         style: {
-          backgroundColor: '#fef2f2',
-          color: '#991b1b',
-          border: '1px solid #fecaca',
-          borderRadius: '8px',
-          padding: '16px'
+          backgroundColor: "#fef2f2",
+          color: "#991b1b",
+          border: "1px solid #fecaca",
+          borderRadius: "8px",
+          padding: "16px",
         },
         dismissible: true,
-        duration: 4000
+        duration: 4000,
       })
     } finally {
       setIsSubmitting(false)
     }
   }
-
   // Check if current question has a value
   const hasValue = (id: string): boolean => {
-    if (id === "workshops") return morningWorkshop !== null || afternoonWorkshop !== null
-    if (id === "roundTables") return selectedRoundTables.length > 0
-    if (id === "activities") return true // Activities are optional
+    if (id === "sessions") return !!formValues.sessions
+
     if (id === "name") return !!(formData.firstName && formData.lastName)
     return formValues[id as keyof DelegateFormValues] !== undefined && formValues[id as keyof DelegateFormValues] !== ""
   }
@@ -1122,42 +905,9 @@ const {
     return questionId
   }
 
-  // Get workshop name by ID
-  const getWorkshopName = (id: string): string => {
-    // Log for debugging
-    console.log("Getting workshop name for ID:", id)
-    console.log("Current workshops data:", workshops)
-
-    // Try to find the workshop in the array
-    const workshop = workshops.find((w) => w.id === id)
-
-    // Log result
-    console.log("Found workshop:", workshop)
-
-    // Return name if found, otherwise return ID as fallback
-    return workshop ? workshop.name : `Workshop ${id}`
-  }
-
-  // Get round table name by ID
-  const getRoundTableName = (id: string): string => {
-    const roundTable = ROUND_TABLES.find((rt) => rt.id === id)
-    return roundTable ? roundTable.name : id
-  }
-
-  // Get activity name by ID
-  const getActivityName = (id: string): string => {
-    const activity = ACTIVITIES.find((a) => a.id === id)
-    return activity ? activity.name : id
-  }
-
   // Render form input based on question type
   const renderFormInput = () => {
     if (!currentQuestion) return null
-
-    // Get field error from React Hook Form
-    // const fieldError = errors[currentQuestion.id as keyof DelegateFormValues]
-    // console.log("Field error:", fieldError)
-
     switch (currentQuestion.type) {
       case "name":
         return (
@@ -1194,7 +944,9 @@ const {
               className={cn("w-full h-12 text-lg", hasPhoneError ? "border-red-500 focus-visible:ring-red-500" : "")}
             />
             {hasPhoneError && (
-              <p className="text-red-500 text-sm mt-1">Phone number must start with &apos;+&apos; and be at least 10 characters long</p>
+              <p className="text-red-500 text-sm mt-1">
+                Phone number must start with &apos;+&apos; and be at least 10 characters long
+              </p>
             )}
           </div>
         )
@@ -1265,190 +1017,50 @@ const {
             {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message as string}</p>}
           </div>
         )
-        case "workshops":
-          return (
-            <div className="w-full max-w-2xl mx-auto mt-6">
-              {currentQuestion.description && (
-                <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.description}</div>
-              )}
-  
-              {isLoadingWorkshops ? (
-                <div className="text-center py-10">
-                  <div className="w-10 h-10 border-2 border-[#026FB4] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading workshops...</p>
-                </div>
-              ) : workshopsError ? (
-                <div className="text-center text-red-500 mb-4">{workshopsError}</div>
-              ) : (
-                <>
-                  {/* Morning Workshops Section */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-medium text-center mb-4">Morning Session</h3>
-                    <p className="text-sm text-center text-gray-500 mb-4">Select one workshop for the morning session</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      {morningWorkshops.map((workshop) => {
-                        const isFull = workshop.registered >= workshop.capacity;
-                        const remainingCapacity = workshop.capacity - workshop.registered;
-                        return (
-                          <div
-                            key={`morning-${workshop.id}`}
-                            className={cn(
-                              "border rounded-lg p-4 text-center transition-all",
-                              isFull
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70" // Style for full
-                                : morningWorkshop === workshop.id
-                                  ? "border-[#026FB4] bg-blue-50 cursor-pointer" // Style for selected
-                                  : "border-gray-200 hover:border-gray-300 cursor-pointer", // Style for available
-                            )}
-                            onClick={() => !isFull && handleMorningWorkshopSelect(workshop.id)} // Prevent click if full
-                          >
-                            <div className="flex justify-center mb-3">
-                              <div className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-                                isFull ? "bg-gray-200" : "bg-blue-100" // Icon background for full
-                              )}>
-                                <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-                              </div>
-                            </div>
-                            <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>{workshop.name}</div>
-                            <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-                              {workshop.venue} | {workshop.schedule}
-                            </div>
-                            {/* <div className={cn("text-sm text-gray-600 mb-2 px-2 whitespace-normal", isFull && "text-gray-400")} title={workshop.short_description}>
-                              {workshop.short_description}
-                            </div> */}
-                            {/* Display remaining capacity or 'Full' message */}
-                            <div className={cn(
-                              "text-sm font-medium mt-2", 
-                              isFull ? "text-red-500" : "text-green-600"
-                            )}>
-                              {isFull ? "Workshop Full" : `${remainingCapacity} spot(s) remaining`}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-  
-                  {/* Afternoon Workshops Section */}
-                  <div>
-                    <h3 className="text-lg font-medium text-center mb-4">Afternoon Session</h3>
-                    <p className="text-sm text-center text-gray-500 mb-4">
-                      Select one workshop for the afternoon session
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      {afternoonWorkshops.map((workshop) => {
-                        const isFull = workshop.registered >= workshop.capacity;
-                        const remainingCapacity = workshop.capacity - workshop.registered;
-                        return (
-                          <div
-                            key={`afternoon-${workshop.id}`}
-                            className={cn(
-                              "border rounded-lg p-4 text-center transition-all",
-                              isFull
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70" // Style for full
-                                : afternoonWorkshop === workshop.id
-                                  ? "border-[#026FB4] bg-blue-50 cursor-pointer" // Style for selected
-                                  : "border-gray-200 hover:border-gray-300 cursor-pointer", // Style for available
-                            )}
-                            onClick={() => !isFull && handleAfternoonWorkshopSelect(workshop.id)} // Prevent click if full
-                          >
-                            <div className="flex justify-center mb-3">
-                             <div className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-                                isFull ? "bg-gray-200" : "bg-blue-100" // Icon background for full
-                              )}>
-                                <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-                              </div>
-                            </div>
-                            <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>{workshop.name}</div>
-                            <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-                              {workshop.venue} | {workshop.schedule}
-                            </div>
-                            {/* <div className={cn("text-sm text-gray-600 mb-2 px-2 whitespace-normal", isFull && "text-gray-400")} title={workshop.short_description}>
-                              {workshop.short_description}
-                            </div> */}
-                            {/* Display remaining capacity or 'Full' message */}
-                            <div className={cn(
-                              "text-sm font-medium mt-2", 
-                              isFull ? "text-red-500" : "text-green-600"
-                            )}>
-                             {isFull ? "Workshop Full" : `${remainingCapacity} spot(s) remaining`}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-        )
-      case "roundTables":
+      case "sessions":
         return (
           <div className="w-full max-w-2xl mx-auto mt-6">
-            <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.question}</div>
+            {currentQuestion.description && (
+              <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.description}</div>
+            )}
 
-            <div className="grid grid-cols-1 gap-4 mt-4">
-              {ROUND_TABLES.map((roundTable) => (
-                <div
-                  key={roundTable.id}
-                  className={cn(
-                    "border rounded-lg p-4 cursor-pointer transition-all",
-                    selectedRoundTables.includes(roundTable.id)
-                      ? "border-[#026FB4] bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300",
-                  )}
-                  onClick={() => handleRoundTableToggle(roundTable.id)}
-                >
-                  <div className="flex items-center">
-                    <Checkbox
-                      id={`rt-${roundTable.id}`}
-                      checked={selectedRoundTables.includes(roundTable.id)}
-                      onCheckedChange={() => handleRoundTableToggle(roundTable.id)}
-                      className="mr-3 h-5 w-5 data-[state=checked]:bg-[#026FB4] data-[state=checked]:text-white"
-                    />
-                    <Label htmlFor={`rt-${roundTable.id}`} className="flex-1 cursor-pointer font-medium">
-                      {roundTable.name}
-                    </Label>
+            <RadioGroup
+              value={formValues.sessions || ""}
+              onValueChange={(value) => handleInputChange("sessions", value)}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="youth-engagement" id="youth-engagement" />
+                <Label htmlFor="youth-engagement" className="flex-1">
+                  <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
+                    <div className="flex justify-center mb-3">
+                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
+                        <div className="text-[#026FB4]">👥</div>
+                      </div>
+                    </div>
+                    <div className="font-medium text-lg mb-2">Youth Engagement</div>
+                    <div className="text-sm text-gray-500 mb-2">Main Hall | June 4, 2025</div>
+                    <div className="text-sm font-medium mt-2 text-green-600">150 capacity</div>
                   </div>
-                  <div className="mt-2 pl-8 text-sm text-gray-600">{roundTable.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      case "activities":
-        return (
-          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
-            <div className="text-center text-lg font-medium text-gray-700 mb-4">
-              Select activities you would like to attend
-            </div>
+                </Label>
+              </div>
 
-            <div className="space-y-3 mt-4">
-              {ACTIVITIES.map((activity) => (
-                <div
-                  key={activity.id}
-                  className={cn(
-                    "border rounded-lg p-4 flex items-center cursor-pointer transition-all",
-                    selectedActivities.includes(activity.id)
-                      ? "border-[#026FB4] bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300",
-                  )}
-                  onClick={() => handleActivityToggle(activity.id)}
-                >
-                  <Checkbox
-                    id={`activity-${activity.id}`}
-                    checked={selectedActivities.includes(activity.id)}
-                    onChange={() => handleActivityToggle(activity.id)}
-                    className="mr-3 h-5 w-5 data-[state=checked]:bg-[#026FB4] data-[state=checked]:text-white"
-                  />
-                  <Label htmlFor={`activity-${activity.id}`} className="flex-1 cursor-pointer">
-                    {activity.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="symposium" id="symposium" />
+                <Label htmlFor="symposium" className="flex-1">
+                  <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
+                    <div className="flex justify-center mb-3">
+                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
+                        <div className="text-[#026FB4]">🎯</div>
+                      </div>
+                    </div>
+                    <div className="font-medium text-lg mb-2">Symposium</div>
+                    <div className="text-sm text-gray-500 mb-2">Conference Hall | June 4, 2025</div>
+                    <div className="text-sm font-medium mt-2 text-green-600">200 capacity</div>
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         )
       case "file":
@@ -1460,7 +1072,6 @@ const {
               <p>Your picture is meant is for your identification and future EAC events in Rwanda"</p>
               <p className="pt-2">Max size - 1 MB</p>
             </div>
-
             <div
               className="border-2 border-dashed rounded-md p-10 text-center cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={handleUploadAreaClick}
@@ -1489,7 +1100,14 @@ const {
                   <p className="text-sm text-gray-500 mt-1">Click to upload or drag and drop</p>
                 </div>
               </div>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} required/>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+                required
+              />
             </div>
           </div>
         )
@@ -1510,7 +1128,6 @@ const {
                 </div>
               ))}
             </RadioGroup>
-
             {/* Dietary restrictions input field */}
             {currentQuestion.id === "dietary" &&
               formValues[currentQuestion.id as keyof typeof formValues] === "Yes" && (
@@ -1536,7 +1153,6 @@ const {
                       </Button>
                     </div>
                   </div>
-
                   {additionalInfo.dietary?.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {additionalInfo.dietary.map((info, index) => (
@@ -1552,7 +1168,10 @@ const {
                             onClick={() => {
                               const newDietary = [...additionalInfo.dietary]
                               newDietary.splice(index, 1)
-                              setAdditionalInfo({ ...additionalInfo, dietary: newDietary })
+                              setAdditionalInfo({
+                                ...additionalInfo,
+                                dietary: newDietary,
+                              })
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -1563,7 +1182,6 @@ const {
                   )}
                 </div>
               )}
-
             {/* Special needs input field */}
             {currentQuestion.id === "special-needs" &&
               formValues["special-needs" as keyof typeof formValues] === "Yes" && (
@@ -1589,7 +1207,6 @@ const {
                       </Button>
                     </div>
                   </div>
-
                   {additionalInfo["special-needs"]?.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {additionalInfo["special-needs"].map((info, index) => (
@@ -1605,7 +1222,10 @@ const {
                             onClick={() => {
                               const newSpecialNeeds = [...additionalInfo["special-needs"]]
                               newSpecialNeeds.splice(index, 1)
-                              setAdditionalInfo({ ...additionalInfo, "special-needs": newSpecialNeeds })
+                              setAdditionalInfo({
+                                ...additionalInfo,
+                                "special-needs": newSpecialNeeds,
+                              })
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -1616,13 +1236,77 @@ const {
                   )}
                 </div>
               )}
+            {/* Accommodation input field */}
+            {currentQuestion.id === "accommodation" &&
+              (formValues.accommodation === "Booked" || formValues.accommodation === "Other") && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                  <div className="mb-3">
+                    <Label className="text-base text-gray-700 font-medium mb-2 block">
+                      {formValues.accommodation === "Booked"
+                        ? "Please specify the hotel/place name:"
+                        : "Please specify your accommodation arrangement:"}
+                    </Label>
+                    <Input
+                      value={accommodationDetails}
+                      onChange={(e) => setAccommodationDetails(e.target.value)}
+                      placeholder={
+                        formValues.accommodation === "Booked"
+                          ? "Hotel name or accommodation place"
+                          : "e.g., Staying at home, with family, etc."
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+            {/* ID Type conditional input */}
+            {currentQuestion.id === "idType" && formValues.idType && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                <div className="mb-3">
+                  <Label className="text-base text-gray-700 font-medium mb-2 block">
+                    {formValues.idType === "National ID Number" ? "National ID" : "Passport Number"}
+                    <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    value={formValues.idNumber || ""}
+                    onChange={(e) => {
+                      handleInputChange("idNumber", e.target.value)
+                      setIdType(formValues.idType || "")
+                    }}
+                    placeholder={
+                      formValues.idType === "National ID Number"
+                        ? "Enter 16 digit National ID"
+                        : "Enter passport number"
+                    }
+                    className={cn(
+                      "w-full",
+                      formValues.idType === "National ID Number" &&
+                        formValues.idNumber &&
+                        formValues.idNumber.length !== 16
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "",
+                    )}
+                  />
+                  {formValues.idType === "National ID Number" && (
+                    <p className="text-sm text-orange-600 mt-1">
+                      Selecting National ID as the type requires you to input the National ID number (16 digits)
+                    </p>
+                  )}
+                  {formValues.idType === "National ID Number" &&
+                    formValues.idNumber &&
+                    formValues.idNumber.length !== 16 && (
+                      <p className="text-red-500 text-sm mt-1">National ID must be exactly 16 characters</p>
+                    )}
+                </div>
+              </div>
+            )}
           </div>
         )
       default:
         return null
     }
   }
-
   // Render summary view
   const renderSummaryView = () => {
     if (isSubmitted) {
@@ -1635,7 +1319,7 @@ const {
           <div className="max-w-md mx-auto bg-green-50 p-6 rounded-lg mb-8 border border-green-200">
             <p className="text-gray-700 text-lg mb-4">Thank you for registering for the FutureSkills Forum!</p>
             <p className="text-gray-600">
-            You will soon receive confirmation to <span className="font-bold">{formValues.email}</span> with all the
+              You will soon receive confirmation to <span className="font-bold">{formValues.email}</span> with all the
               details.
             </p>
             <p className="text-gray-600 mt-4">Your registration ID: {registrationId}</p>
@@ -1648,7 +1332,6 @@ const {
       <div className="py-6">
         <h2 className="text-2xl font-bold mb-6 text-center">Review Your Information</h2>
         <p className="text-gray-600 mb-8 text-center">Please review your information before submitting.</p>
-
         <div className="space-y-8">
           {STEPS.map((step) => (
             <div key={step.id} className="border rounded-lg overflow-hidden">
@@ -1659,17 +1342,7 @@ const {
                 {QUESTIONS[step.id as keyof typeof QUESTIONS].map((question) => {
                   // Fix type error by using type assertion
                   const value = formValues[question.id as keyof DelegateFormValues]
-                  if (question.id === "roundTables" || question.id === "activities") return null
-                  if (
-                    !value &&
-                    question.id !== "workshops" &&
-                    question.id !== "roundTables" &&
-                    question.id !== "activities"
-                  )
-                    return null
-
                   let displayValue = value
-
                   if (question.id === "photo") {
                     displayValue = "Uploaded"
                   } else if (question.id === "dietary" && value === "Yes") {
@@ -1684,56 +1357,11 @@ const {
                     } else {
                       displayValue = "Yes"
                     }
-                  } else if (question.id === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
-                      }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
-                      }
-                    }
-
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
+                  } else if (question.id === "sessions") {
+                    displayValue =
+                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
-                  } else if (question.id === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (question.id === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
-                    }
                   }
-
                   return (
                     <div key={question.id} className="flex justify-between border-b pb-2">
                       <span className="text-gray-600 font-medium">{question.previewLabel}:</span>
@@ -1748,107 +1376,11 @@ const {
       </div>
     )
   }
-
   // Calculate the circle progress style
   const circleRadius = 20
   const circleCircumference = 2 * Math.PI * circleRadius
   const strokeDashoffset = circleCircumference * (1 - progress / 100)
-
   // Fetch workshops from API
-  useEffect(() => {
-    const fetchWorkshops = async () => {
-      setIsLoadingWorkshops(true)
-      setWorkshopsError(null)
-  
-      try {
-        const response = await fetch(`${BACKEND_URL}/workshops`, {
-          method: "GET",
-          headers: {
-            accept: "*/*",
-          },
-        })
-  
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
-        }
-  
-        const data = await response.json()
-        console.log("Workshops data fetched:", data)
-  
-        const mappedWorkshops = data.map((workshop: Workshop) => {
-          let icon = '🎯'
-          let schedule = 'TBD'
-          const title = workshop?.title?.toLowerCase() || ''
-          const workshopId = workshop?.id?.toLowerCase() || ''
-  
-          // Icon logic
-          if (title.includes('quality') || workshopId === 'ws1') {
-            icon = '🎯'
-          } else if (title.includes('relevance') || workshopId === 'ws2') {
-            icon = '🤝'
-          } else if (title.includes('inclusion') || title.includes('access') || workshopId === 'ws3') {
-            icon = '🔑'
-          } else if ((title.includes('innovation') && !title.includes('ecosystem')) || workshopId === 'ws4') {
-            icon = '💡'
-          } else if (title.includes('skills outlook') || workshopId === 'ws5') {
-            icon = '📊'
-          } else if (title.includes('emerging technologies') || workshopId === 'ws6') {
-            icon = '🔧'
-          } else if (title.includes('inclusive workforce') || workshopId === 'ws7') {
-            icon = '👥'
-          } else if (title.includes('innovation ecosystem') || workshopId === 'ws8') {
-            icon = '🚀'
-          }
-  
-          // Schedule logic
-          if (
-            workshopId === 'ws1' || workshopId === 'ws2' || workshopId === 'ws3' || workshopId === 'ws4' ||
-            title.includes('quality') || title.includes('relevance') || title.includes('inclusion') ||
-            (title.includes('innovation') && !title.includes('ecosystem'))
-          ) {
-            schedule = 'June 4, 2025 from 11:30 AM to 1:00 PM'
-          } else if (
-            workshopId === 'ws5' || workshopId === 'ws6' || workshopId === 'ws7' || workshopId === 'ws8' ||
-            title.includes('skills outlook') || title.includes('emerging technologies') || title.includes('inclusive workforce') ||
-            (title.includes('innovation') && title.includes('ecosystem'))
-          ) {
-            schedule = 'June 4, 2025 from 14:30 PM to 16:00 PM'
-          }
-  
-          return {
-            id: workshop?.id,
-            name: workshop?.title || "Untitled Workshop",
-            icon: icon,
-            capacity: workshop?.capacity || 0,
-            registered: workshop?.registered || 0,
-            venue: workshop?.venue || "TBD",
-            schedule: schedule,
-          }
-        })
-  
-        // Optional: group into morning/afternoon if you still need that
-        const morning = mappedWorkshops.filter((w: { schedule: string | string[] }) => w.schedule.includes('11:30 AM'))
-        const afternoon = mappedWorkshops.filter((w: { schedule: string | string[] }) => w.schedule.includes('14:30 PM'))
-  
-        console.log("Mapped workshops:", mappedWorkshops)
-        console.log("Morning workshops:", morning)
-        console.log("Afternoon workshops:", afternoon)
-  
-        setWorkshops(mappedWorkshops)
-        setMorningWorkshops(morning)
-        setAfternoonWorkshops(afternoon)
-  
-      } catch (error) {
-        console.error("Failed to fetch workshops:", error)
-        setWorkshopsError("Failed to load workshops. Please try again later.")
-      } finally {
-        setIsLoadingWorkshops(false)
-      }
-    }
-  
-    fetchWorkshops()
-  }, [])
-  
 
   return (
     <div className="container mx-auto p-2 sm:p-4 md:p-6">
@@ -1876,7 +1408,6 @@ const {
         </svg>
         Reset Form
       </button>
-
       <div
         ref={formRef}
         className="bg-white rounded-lg shadow-lg overflow-hidden min-h-[500px] sm:min-h-[600px] md:min-h-[700px] relative"
@@ -1896,7 +1427,7 @@ const {
                 </Link>
               </Button>
               <Image
-                src="/repub.jpeg" 
+                src="/repub.jpeg"
                 alt="FutureSkills Logo"
                 width={120}
                 height={40}
@@ -1931,7 +1462,6 @@ const {
             </div>
           </div>
         </div>
-
         {/* Rest of the form */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_350px]">
           {/* Sidebar */}
@@ -1950,10 +1480,9 @@ const {
             </div>
             <div className="mb-10">
               <Link href="/landing">
-                <Image src="/eac.jpeg"  alt="FutureSkills Logo" width={180} height={60} />
+                <Image src="/eac.jpeg" alt="FutureSkills Logo" width={180} height={60} />
               </Link>
             </div>
-
             <nav className="space-y-3">
               {STEPS.map((step, index) => (
                 <div
@@ -2023,18 +1552,6 @@ const {
 
           {/* Main Content */}
           <div className="p-3 sm:p-4 md:p-6 lg:p-10 flex flex-col overflow-y-auto" ref={formContainerRef}>
-            {/* Permanent back button to landing page */}
-            {/* <Button
-              variant="ghost"
-              size="sm"
-              className="self-start mb-4 -ml-2 text-gray-600 hover:text-[#026FB4] hover:bg-blue-50"
-              asChild
-            >
-              <Link href="/">
-                <ArrowLeft className="mr-1 h-4 w-4" /> Back to Home
-              </Link>
-            </Button> */}
-
             {!isSummaryView ? (
               <>
                 <div className="flex items-center mb-8">
@@ -2070,7 +1587,6 @@ const {
                       {progress}%
                     </div>
                   </div>
-
                   <div className="ml-6">
                     <div className="text-sm text-gray-500">
                       Question {currentQuestionNumber}/{totalQuestions}
@@ -2142,7 +1658,6 @@ const {
                 </Button>
               </div>
             )}
-
             {/* Progress Dots */}
             {!isSummaryView && !isSubmitted && (
               <div className="mt-10 flex justify-center space-x-1">
@@ -2158,11 +1673,9 @@ const {
               </div>
             )}
           </div>
-
           {/* Preview Panel */}
           <div className="hidden md:block bg-gray-50 p-6 border-l">
             <div className="text-right mb-4 text-base text-gray-500 font-medium">Preview</div>
-
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <div className="flex items-center space-x-4 mb-6">
                 <div className="relative w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
@@ -2184,13 +1697,10 @@ const {
                   </p>
                 </div>
               </div>
-
               <div className="space-y-3 text-base">
                 {/* Only show questions from the current section */}
                 {Object.entries(formValues).map(([key, value]) => {
                   if (!value || value === "") return null
-                  if (key === "roundTables" || key === "activities") return null // Skip these fields
-
                   // Check if the question belongs to the current step
                   let belongsToCurrentStep = false
                   if (!isSummaryView) {
@@ -2199,12 +1709,9 @@ const {
                     // In summary view, show all fields
                     belongsToCurrentStep = true
                   }
-
                   if (!belongsToCurrentStep) return null
-
                   // Get the formatted preview label
                   const previewLabel = getPreviewLabel(key)
-
                   // Special handling for file uploads and radio buttons
                   let displayValue = value
                   if (key === "photo") {
@@ -2221,56 +1728,11 @@ const {
                     } else {
                       displayValue = "Yes"
                     }
-                  } else if (key === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
-                      }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
-                      }
-                    }
-
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
+                  } else if (key === "sessions") {
+                    displayValue =
+                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
-                  } else if (key === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (key === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
-                    }
                   }
-
                   return (
                     <div key={key} className="flex justify-between border-b pb-2">
                       <span className="text-gray-600 font-medium">{previewLabel}:</span>
@@ -2278,21 +1740,6 @@ const {
                     </div>
                   )
                 })}
-
-                {/* Show selected workshops in preview even if not in formData */}
-                {currentStep.id === "event-based-info" &&
-                  (morningWorkshop || afternoonWorkshop) &&
-                  !Object.keys(formValues).includes("workshops") && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">Workshops:</span>
-                      <span className="font-medium text-right max-w-[60%] break-words">
-                        {morningWorkshop && `Morning: ${getWorkshopName(morningWorkshop)}`}
-                        {morningWorkshop && afternoonWorkshop && ", "}
-                        {afternoonWorkshop && `Afternoon: ${getWorkshopName(afternoonWorkshop)}`}
-                      </span>
-                    </div>
-                  )}
-
                 {/* Show name in preview even if not in formValues */}
                 {currentStep.id === "personal-info" &&
                   !Object.keys(formValues).includes("firstName") &&
@@ -2309,7 +1756,6 @@ const {
             </div>
           </div>
         </div>
-
         {/* Enhanced Mobile Preview Panel */}
         <div className="preview-panel md:hidden fixed inset-0 bg-white z-50 transform translate-y-full transition-transform duration-300 ease-in-out">
           <div className="flex justify-between items-center p-3 sm:p-4 border-b">
@@ -2357,8 +1803,6 @@ const {
                 {/* Only show questions from the current section */}
                 {Object.entries(formValues).map(([key, value]) => {
                   if (!value || value === "") return null
-                  if (key === "roundTables" || key === "activities") return null // Skip these fields
-
                   // Check if the question belongs to the current step
                   let belongsToCurrentStep = false
                   if (!isSummaryView) {
@@ -2367,12 +1811,9 @@ const {
                     // In summary view, show all fields
                     belongsToCurrentStep = true
                   }
-
                   if (!belongsToCurrentStep) return null
-
                   // Get the formatted preview label
                   const previewLabel = getPreviewLabel(key)
-
                   // Special handling for file uploads and radio buttons
                   let displayValue = value
                   if (key === "photo") {
@@ -2389,56 +1830,11 @@ const {
                     } else {
                       displayValue = "Yes"
                     }
-                  } else if (key === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
-                      }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
-                      }
-                    }
-
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
+                  } else if (key === "sessions") {
+                    displayValue =
+                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
                     if (!displayValue) return null
-                  } else if (key === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (key === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
-                    }
                   }
-
                   return (
                     <div key={key} className="flex justify-between border-b pb-2">
                       <span className="text-gray-600 font-medium">{previewLabel}:</span>
@@ -2446,21 +1842,6 @@ const {
                     </div>
                   )
                 })}
-
-                {/* Show selected workshops in preview even if not in formData */}
-                {currentStep.id === "event-based-info" &&
-                  (morningWorkshop || afternoonWorkshop) &&
-                  !Object.keys(formValues).includes("workshops") && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">Workshops:</span>
-                      <span className="font-medium text-right max-w-[60%] break-words">
-                        {morningWorkshop && `Morning: ${getWorkshopName(morningWorkshop)}`}
-                        {morningWorkshop && afternoonWorkshop && ", "}
-                        {afternoonWorkshop && `Afternoon: ${getWorkshopName(afternoonWorkshop)}`}
-                      </span>
-                    </div>
-                  )}
-
                 {/* Show name in preview even if not in formValues */}
                 {currentStep.id === "personal-info" &&
                   !Object.keys(formValues).includes("firstName") &&
@@ -2478,47 +1859,61 @@ const {
           </div>
         </div>
       </div>
-
       <style jsx global>{`
         @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
         }
         @keyframes shimmerReverse {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
         }
         @keyframes shimmerVertical {
-          0% { background-position: 0 200%; }
-          100% { background-position: 0 -200%; }
+          0% {
+            background-position: 0 200%;
+          }
+          100% {
+            background-position: 0 -200%;
+          }
         }
         @keyframes shimmerVerticalReverse {
-          0% { background-position: 0 -200%; }
-          100% { background-position: 0 200%; }
+          0% {
+            background-position: 0 -200%;
+          }
+          100% {
+            background-position: 0 200%;
+          }
         }
         .mobile-preview-active {
           transform: translateY(0) !important;
         }
 
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
 
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-      }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
 
-      /* Responsive adjustments */
-      @media (max-width: 640px) {
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
           .container {
-          padding: 0.5rem;
+            padding: 0.5rem;
           }
         }
       `}</style>
     </div>
   )
 }
- 
