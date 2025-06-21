@@ -5,7 +5,7 @@ import { DashboardStats } from "@/components/dashboard-stats"
 import { UserProfile } from "@/components/users/UserProfile"
 import { useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { UUID } from "crypto"
+import type { UUID } from "crypto"
 import { BACKEND_URL } from "@/lib/config"
 
 interface DecodedToken {
@@ -28,10 +28,10 @@ export default function DashboardPage() {
           console.log("Decoded token:", decoded)
 
           const response = await fetch(`${BACKEND_URL}/users/${decoded.id}`, {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'accept': '*/*'
+              Authorization: `Bearer ${token}`,
+              accept: "*/*",
             },
           })
 
@@ -42,8 +42,7 @@ export default function DashboardPage() {
           const data = await response.json()
           console.log("Fetched user data:", data)
 
-          setUserName(data.firstName) // Set the last name
-
+          setUserName(data.firstName)
         } catch (error) {
           console.error("Error fetching user data:", error)
         }
@@ -52,6 +51,7 @@ export default function DashboardPage() {
 
     fetchUserData()
   }, [])
+
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
@@ -63,13 +63,14 @@ export default function DashboardPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">
               <div className="flex items-center ">
-              <span>Welcome 👋, {userName || "User"}</span>
+                <span>Welcome 👋, {userName || "User"}</span>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Welcome to your event management dashboard. Here&apos;s an overview of your events and registrations.
+              Welcome to your Global Skill Connect event management dashboard. Here&apos;s an overview of your event
+              sessions and delegate registrations.
             </p>
           </CardContent>
         </Card>

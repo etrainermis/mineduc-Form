@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const metadata: Metadata = {
-  title: "Rwanda FutureSkills Forum",
+  title: "4th EAC World Kiswahili Language Day Celebrations",
   description: "Easy Registration and event management",
 }
 
