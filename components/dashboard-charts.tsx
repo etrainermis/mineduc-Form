@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, MoreHorizontal, User, X } from "lucide-react";
 import { getToken } from "@/utils/token";
 import Link from "next/link";
@@ -71,6 +71,10 @@ export function DashboardCharts({
   const [workshopsCount, setWorkshopsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sessionData, setSessionData] = useState([
+    { name: "Symposium", registrations: 0, capacity: 200, available: 200 },
+    { name: "Youth Engagement", registrations: 0, capacity: 150, available: 150 },
+  ])
 
   // Comment out unused variable or use it in the component
   // const [delegatesData, setDelegatesData] = useState<Delegate[]>([])
@@ -86,6 +90,7 @@ export function DashboardCharts({
     WorkshopAttendance[]
   >([]);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
+  
 
   // Add useEffect to fetch delegates data
   useEffect(() => {
@@ -449,165 +454,59 @@ export function DashboardCharts({
             </div>
           )}
 
-          {/* Workshop Attendance - Now directly after Activities */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-700">
-                Workshop Attendance
-              </h2>
-            </div>
-            <Card className="p-4">
-              {isLoadingAttendance ? (
-                <div className="flex justify-center items-center h-24">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#026FB4]"></div>
-                </div>
-              ) : workshopAttendanceData.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
-                  No workshop data available
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {workshopAttendanceData.slice(0, 8).map((workshop) => (
-                    <div key={workshop.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {workshop.percentage >= 75 ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : workshop.percentage < 50 ? (
-                            <X className="h-4 w-4 text-red-500" />
-                          ) : (
-                            <X className="h-4 w-4 text-orange-500" />
-                          )}
-                          <span
-                            className="text-sm font-medium truncate max-w-[150px]"
-                            title={workshop.name}
-                          >
-                            {workshop.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-gray-500">
-                            {workshop.count}/100
-                          </span>
-                          <span className="text-xs font-medium text-gray-700">
-                            {workshop.percentage}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${getColorClass(
-                            workshop.percentage
-                          )}`}
-                          style={{ width: `${workshop.percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
+         
         </div>
       </div>
-
-      {/* Workshops and Applications per workshop */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div>
-          {/* Workshops Card */}
-          <Card
-            className={`p-4 cursor-pointer transition-all duration-200 h-full ${
-              activeCard === "workshops" ? "ring-2 ring-[#026FB4]" : ""
-            }`}
-            onClick={() => handleCardClick("workshops")}
-            style={{
-              backgroundColor:
-                activeCard === "workshops" ? "#f0f7ff" : "#026FB4",
-            }}
-          >
-            <Link
-              href="/admin/workshops"
-              className="flex items-start justify-between"
-            >
-              <div>
-                <h3
-                  className={`text-sm font-medium ${
-                    activeCard === "workshops" ? "text-gray-600" : "text-white"
-                  }`}
-                >
-                  Workshops
-                </h3>
-                <p
-                  className={`text-4xl font-bold mt-2 ${
-                    activeCard === "workshops" ? "text-gray-800" : "text-white"
-                  }`}
-                >
-                  {isLoading ? (
-                    <span className="text-2xl">...</span>
-                  ) : error ? (
-                    <span className="text-2xl">-</span>
-                  ) : (
-                    workshopsCount
-                  )}
-                </p>
-                {error && (
-                  <p
-                    className={`text-xs mt-1 ${
-                      activeCard === "workshops"
-                        ? "text-red-500"
-                        : "text-red-300"
+{/* Session Details Card */}
+      <Card className="col-span-full lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Session Details</CardTitle>
+          <CardDescription>Detailed information about event sessions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {sessionData.map((session, index) => (
+              <div key={session.name} className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-lg">{session.name}</h3>
+                  <div
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      session.registrations >= session.capacity * 0.9
+                        ? "bg-red-100 text-red-800"
+                        : session.registrations >= session.capacity * 0.7
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
                     }`}
                   >
-                    Error loading data
-                  </p>
-                )}
-                <p
-                  className={`text-xs mt-1 ${
-                    activeCard === "workshops"
-                      ? "text-gray-500"
-                      : "text-white/80"
-                  }`}
-                >
-                  In one event
-                </p>
+                    {Math.round((session.registrations / session.capacity) * 100)}% Full
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Registered:</span>
+                    <span className="font-medium">{session.registrations}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Capacity:</span>
+                    <span className="font-medium">{session.capacity}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Available:</span>
+                    <span className="font-medium text-green-600">{session.available}</span>
+                  </div>
+                </div>
+                <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-[#026FB4] h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(session.registrations / session.capacity) * 100}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="p-2 rounded-full bg-[#026FB4]">
-                <User className="h-5 w-5 text-white" />
-              </div>
-            </Link>
-          </Card>
-        </div>
-        <div className="lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-700">
-              Applications per workshop
-            </h2>
+            ))}
           </div>
-          <Card className="p-4">
-            {isLoadingWorkshops ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#026FB4]"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {workshopsData.map((workshop) => (
-                  <Card
-                    key={workshop.id}
-                    className="p-4 flex flex-col items-center justify-center"
-                  >
-                    <p className="text-3xl font-bold text-gray-800">
-                      {workshopDelegatesCount[workshop.id] || 0}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-2 text-center">
-                      {workshop.title}
-                    </p>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+     
     </div>
   );
 }

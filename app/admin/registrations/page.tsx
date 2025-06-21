@@ -100,6 +100,24 @@ interface Registration {
   role: string
 }
 
+// Add a hook to fetch all workshops and map IDs to titles
+function useWorkshopTitles() {
+  const [workshopMap, setWorkshopMap] = useState<Record<string, string>>({})
+  useEffect(() => {
+    fetch("https://4theacworldkiswahili.mineduc.gov.rw/workshops")
+      .then(res => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const map: Record<string, string> = {}
+          data.forEach((w: any) => { if (w.id && w.title) map[w.id] = w.title })
+          setWorkshopMap(map)
+        }
+      })
+      .catch(() => setWorkshopMap({}))
+  }, [])
+  return workshopMap
+}
+
 export default function RegistrationsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [registrations, setRegistrations] = useState<Registration[]>([])
@@ -122,6 +140,8 @@ export default function RegistrationsPage() {
   const uniqueDelegateTypes = Array.from(new Set(registrations.map((r) => r.delegate_type))).filter(Boolean)
   const uniqueCountries = Array.from(new Set(registrations.map((r) => r.country))).filter(Boolean)
 
+  const workshopMap = useWorkshopTitles();
+
   // Fetch delegates from API
   useEffect(() => {
     const fetchDelegates = async () => {
@@ -140,33 +160,51 @@ export default function RegistrationsPage() {
         const data = await response.json()
 
         // Enhanced mapping to include all form fields
-        const mappedRegistrations = data.map((delegate: DelegateApiResponse) => ({
-          id: delegate.id || 0,
-          fullname: `${delegate.firstName} ${delegate.lastName}`,
-          email: delegate.email,
-          phone_number: delegate.phonenumber,
-          gender: delegate.gender,
-          profile_picture: delegate.profile_picture_url || "/placeholder.svg?height=40&width=40",
-          delegate_type: delegate.delegate_type,
-          country: delegate.country,
-          partner_state: delegate.partner_state || "",
-          organization: delegate.organization,
-          position: delegate.position,
-          dietary_restrictions: delegate.dietary_restrictions,
-          special_needs: delegate.special_needs,
-          accommodation_status: delegate.accommodation_status || "",
-          accommodation_details: delegate.accommodation_details || "",
-          id_type: delegate.id_type || "",
-          id_number: delegate.id_number || "",
-          arrival_datetime: delegate.arrival_datetime || "",
-          departure_datetime: delegate.departure_datetime || "",
-          airline: delegate.airline || "",
-          registration_date: delegate.registration_date,
-          selected_event: delegate.selected_event || "Global Skill Connect",
-          selected_activities: delegate.selected_activities || [],
-          workshops: delegate.workshops ? delegate.workshops.map((workshop) => workshop.title) : [],
-          role: delegate.role || "Delegate",
-        }))
+        const mappedRegistrations = data.map((delegate: any) => {
+          // Get workshop titles from any possible field
+          let workshopTitles: string[] = [];
+          if (Array.isArray(delegate.workshops)) {
+            workshopTitles = delegate.workshops.map((w: any) => w.title || w.id || w)
+          } else if (delegate.workshop && typeof delegate.workshop === 'object') {
+            workshopTitles = [delegate.workshop.title || delegate.workshop.id || '']
+          } else if (Array.isArray(delegate.workshopIds)) {
+            workshopTitles = delegate.workshopIds
+          } else if (Array.isArray(delegate.sessions)) {
+            workshopTitles = delegate.sessions
+          } else if (typeof delegate.workshopIds === 'string' && delegate.workshopIds) {
+            workshopTitles = [delegate.workshopIds]
+          } else if (typeof delegate.sessions === 'string' && delegate.sessions) {
+            workshopTitles = [delegate.sessions]
+          }
+
+          return {
+            id: delegate.id || 0,
+            fullname: `${delegate.firstName} ${delegate.lastName}`,
+            email: delegate.email,
+            phone_number: delegate.phonenumber,
+            gender: delegate.gender,
+            profile_picture: delegate.profile_picture_url || "/placeholder.svg?height=40&width=40",
+            delegate_type: delegate.delegate_type,
+            country: delegate.country,
+            partner_state: delegate.partner_state || "",
+            organization: delegate.organization,
+            position: delegate.position,
+            dietary_restrictions: delegate.dietary_restrictions,
+            special_needs: delegate.special_needs,
+            accommodation_status: delegate.accommodation_status || "",
+            accommodation_details: delegate.accommodation_details || "",
+            id_type: delegate.id_type || "",
+            id_number: delegate.id_number || "",
+            arrival_datetime: delegate.arrival_datetime || "",
+            departure_datetime: delegate.departure_datetime || "",
+            airline: delegate.airline || "",
+            registration_date: delegate.registration_date,
+            selected_event: "4th EAC World Kiswahili Language Day Celebrations",
+            selected_activities: delegate.selected_activities || [],
+            workshops: workshopTitles,
+            role: delegate.role || "Delegate",
+          }
+        })
 
         setRegistrations(mappedRegistrations)
       } catch (err) {
@@ -177,7 +215,7 @@ export default function RegistrationsPage() {
     }
 
     fetchDelegates()
-  }, [])
+  }, [workshopMap])
 
   // Enhanced filtering
   const filteredRegistrations = registrations.filter((registration) => {
@@ -813,15 +851,18 @@ export default function RegistrationsPage() {
                     <div className="space-y-2">
                       <Label className="font-medium text-gray-700">Selected Sessions</Label>
                       <div className="space-y-2">
-                        {selectedRegistration.workshops && selectedRegistration.workshops.length > 0 ? (
-                          selectedRegistration.workshops.map((workshop, index) => (
-                            <Badge key={index} variant="outline" className="mr-2 mb-2">
-                              {workshop}
-                            </Badge>
-                          ))
+                      <ul className="list-disc pl-5">
+                        {selectedRegistration.workshops &&
+                        selectedRegistration.workshops.length > 0 ? (
+                          selectedRegistration.workshops.map(
+                            (workshop, index) => <li key={index}>{workshop}</li>
+                          )
                         ) : (
-                          <p className="italic text-muted-foreground">No sessions selected</p>
+                          <p className="italic text-muted-foreground">
+                            No sessions selected
+                          </p>
                         )}
+                      </ul>
                       </div>
                     </div>
                   </div>

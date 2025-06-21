@@ -440,7 +440,7 @@ const delegateFormSchema = z.object({
   accommodation: z.string().min(1, "Please select your accommodation status"),
   idType: z.string().min(1, "Please select your ID type"),
   idNumber: z.string().min(1, "Please enter your ID number"),
-  delegateType: z.enum(["GOV", "SCH/PLT", "DP", "ENT", "EXP"], {
+  delegateType: z.enum(["GOV", "SCH/PLT", "DP", "ENT", "EXP","CSO"], {
     errorMap: () => ({ message: "Please select a valid delegate type" }),
   }),
   position: z.string().min(1, "Please enter your position"),
@@ -482,6 +482,29 @@ export default function DelegateForm() {
   const [formData, setFormData] = useState<Partial<DelegateFormValues>>({})
 
   // Add workshops state from API
+  const [workshops, setWorkshops] = useState<any[]>([])
+  const [workshopsLoading, setWorkshopsLoading] = useState(false)
+  const [workshopsError, setWorkshopsError] = useState<string | null>(null)
+
+  // Fetch workshops on mount
+  useEffect(() => {
+    const fetchWorkshops = async () => {
+      setWorkshopsLoading(true)
+      setWorkshopsError(null)
+      try {
+        const res = await fetch("https://4theacworldkiswahili.mineduc.gov.rw/workshops")
+        if (!res.ok) throw new Error("Failed to fetch workshops")
+        const data = await res.json()
+        setWorkshops(Array.isArray(data) ? data : [])
+      } catch (err: any) {
+        setWorkshopsError(err.message || "Error fetching workshops")
+      } finally {
+        setWorkshopsLoading(false)
+      }
+    }
+    fetchWorkshops()
+  }, [])
+
   const [, setAnimationPosition] = useState(0)
   const [countrySearch, setCountrySearch] = useState("")
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
@@ -520,7 +543,7 @@ export default function DelegateForm() {
       accommodation: "",
       idType: "",
       idNumber: "",
-      delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP",
+      delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP" | "CSO",
       position: "",
       organization: "",
       arrivalDateTime: "",
@@ -625,8 +648,15 @@ export default function DelegateForm() {
   // Handle form input changes
   const handleInputChange = (id: string, value: string) => {
     setValidationError(null)
-    setValue(id as keyof DelegateFormValues, value)
-    setFormData((prev) => ({ ...prev, [id]: value }))
+    if (id === "delegateType") {
+      // Map label to enum value
+      const enumValue = getDelegateTypeEnum(value);
+      setValue(id as keyof DelegateFormValues, enumValue)
+      setFormData((prev) => ({ ...prev, [id]: enumValue as DelegateFormValues['delegateType'] }))
+    } else {
+      setValue(id as keyof DelegateFormValues, value)
+      setFormData((prev) => ({ ...prev, [id]: value }))
+    }
   }
 
   // Handle name input changes
@@ -777,14 +807,20 @@ export default function DelegateForm() {
     }
 
     // Special validation for ID number based on type
-    if (currentQuestion.id === "idNumber" && formValues.idType && formValues.idNumber) {
+    if (currentQuestion.id === "idNumber") {
       const idNumber = formValues.idNumber || ""
-      if (formValues.idType === "National ID Number" && idNumber.length !== 16) {
-        setValidationError("National ID must be exactly 16 characters")
-        return false
-      }
-      if (formValues.idType === "Passport Number" && idNumber.length < 6) {
-        setValidationError("Passport number must be at least 6 characters")
+      if (formValues.idType === "National ID Number") {
+        if (!idNumber || idNumber.length !== 16) {
+          setValidationError("National ID must be exactly 16 characters")
+          return false
+        }
+      } else if (formValues.idType === "Passport Number") {
+        if (!idNumber || idNumber.length < 6) {
+          setValidationError("Passport number must be at least 6 characters")
+          return false
+        }
+      } else {
+        setValidationError("ID number is required")
         return false
       }
     }
@@ -832,85 +868,84 @@ export default function DelegateForm() {
       setIsSummaryView(false)
       return
     }
-    // setValidationError(null)
-    // if (currentQuestionIndex > 0) {
-    //   setCurrentQuestionIndex(currentQuestionIndex - 1)
-    // } else if (currentStepIndex > 0) {
-    //   setCurrentStepIndex(currentStepIndex - 1)
-    //   const prevQuestions = QUESTIONS[STEPS[currentStepIndex - 1].id as keyof QUESTIONS]
-    //   setCurrentQuestionIndex(prevQuestions.length - 1)
-    // }
+    setValidationError(null)
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1)
+    } else if (currentStepIndex > 0) {
+      const prevStep = STEPS[currentStepIndex - 1]
+      const prevQuestions = QUESTIONS[prevStep.id as keyof typeof QUESTIONS].filter((q) => shouldShowQuestion(q))
+      setCurrentStepIndex(currentStepIndex - 1)
+      setCurrentQuestionIndex(prevQuestions.length - 1)
+    }
+    // If at very first question of first step, do nothing
   }
   // Form submission handler - Updated to include travel info
   const handleFormSubmit = async () => {
     setIsSubmitting(true)
 
     try {
-      const formDataToSend = new FormData()
-      formDataToSend.append("firstName", formValues.firstName || "")
-      formDataToSend.append("lastName", formValues.lastName || "")
-      formDataToSend.append("email", formValues.email || "")
-      formDataToSend.append("username", formValues.email || "")
-      formDataToSend.append("myGender", formValues.gender || "Not Specified")
-      formDataToSend.append("role", "DELEGATE")
-      formDataToSend.append("phonenumber", formValues.phoneNumber || "")
-      // Map delegate type to expected backend values
-      const delegateTypeMap: Record<string, string> = {
-        "Public Sector Representative(GOV)": "GOV",
-        "TVET Providers Representative(SCH/PLT)": "SCH/PLT",
-        "Donor and Partner Representative(DP)": "DP",
-        "Private Sector Representative(ENT)": "ENT",
-        "TVET Expert Representative(EXP)": "EXP",
-      }
-      const mappedDelegateType = delegateTypeMap[formValues.delegateType] || formValues.delegateType
-      formDataToSend.append("delegate_type", mappedDelegateType)
-      // Additional information
-      formDataToSend.append("country", formValues.country || "")
-      formDataToSend.append("partner_state", formValues.state || "")
-      formDataToSend.append("organization", formValues.organization || "")
-      formDataToSend.append("position", formValues.position || "")
-
-      // Add travel information if not from Rwanda
-      if (formValues.state && formValues.state !== "Rwanda") {
-        formDataToSend.append("arrival_datetime", formValues.arrivalDateTime || "")
-        formDataToSend.append("departure_datetime", formValues.departureDateTime || "")
-        formDataToSend.append("airline", formValues.airline || "")
-      }
-
-      // Handle dietary restrictions
-      if (formValues.dietary === "Yes" && additionalInfo.dietary?.length > 0) {
-        formDataToSend.append("dietary_restrictions", additionalInfo.dietary.join(", "))
-      } else {
-        formDataToSend.append("dietary_restrictions", "No")
-      }
-      // Handle special needs
-      if (formValues["special-needs"] === "Yes" && additionalInfo["special-needs"]?.length > 0) {
-        formDataToSend.append("special_needs", additionalInfo["special-needs"].join(", "))
-      } else {
-        formDataToSend.append("special_needs", "No")
-      }
-      formDataToSend.append("selected_event", "Global Skill Connect")
-      // Handle profile picture
+      const formDataToSend = new FormData();
+      formDataToSend.append("firstName", formValues.firstName || "");
+      formDataToSend.append("lastName", formValues.lastName || "");
+      formDataToSend.append("email", formValues.email || "");
+      formDataToSend.append("username", formValues.email || "");
+      formDataToSend.append("myGender", formValues.gender || "");
+      formDataToSend.append("role", "DELEGATE");
+      formDataToSend.append(
+        "national_id",
+        formValues.idType === "National ID Number" ? formValues.idNumber || "" : ""
+      );
+      formDataToSend.append("phonenumber", formValues.phoneNumber || "");
+      formDataToSend.append("delegate_type", formValues.delegateType || "");
+      formDataToSend.append("country", formValues.country || "");
+      formDataToSend.append("partner_state", formValues.state || "");
+      formDataToSend.append("organization", formValues.organization || "");
+      formDataToSend.append("position", formValues.position || "");
+      // Profile picture (file)
       if (formValues.photo) {
-        formDataToSend.append("profile_picture_url", formValues.photo)
+        formDataToSend.append("profile_picture_url", formValues.photo);
+      } else {
+        formDataToSend.append("profile_picture_url", "");
       }
-      if (formValues.sessions) {
-        formDataToSend.append("workshopIds", formValues.sessions)
+      // Dietary restrictions
+      formDataToSend.append(
+        "dietary_restrictions",
+        formValues.dietary === "Yes" && additionalInfo.dietary.length > 0
+          ? additionalInfo.dietary.join(", ")
+          : "No"
+      );
+      // Special needs
+      formDataToSend.append(
+        "special_needs",
+        formValues["special-needs"] === "Yes" && additionalInfo["special-needs"].length > 0
+          ? additionalInfo["special-needs"].join(", ")
+          : "No"
+      );
+      // Accommodation status and details
+      formDataToSend.append("accommodation_status", formValues.accommodation || "");
+      formDataToSend.append("accommodation_details", accommodationDetails || "");
+      // Travel info
+      if (formValues.state === "Rwanda") {
+        formDataToSend.append("arrival_datetime", null as any);
+        formDataToSend.append("departure_datetime", null as any);
+        formDataToSend.append("airline", null as any);
+      } else {
+        formDataToSend.append("arrival_datetime", formValues.arrivalDateTime || "");
+        formDataToSend.append("departure_datetime", formValues.departureDateTime || "");
+        formDataToSend.append("airline", formValues.airline || "");
       }
-      formDataToSend.append("accommodation_status", formValues.accommodation || "")
-      if (formValues.accommodation === "Booked" && accommodationPlace) {
-        formDataToSend.append("accommodation_place", accommodationPlace)
-      } else if (formValues.accommodation === "Other" && accommodationReason) {
-        formDataToSend.append("accommodation_reason", accommodationReason)
-      }
-      formDataToSend.append("id_type", formValues.idType || "")
-      formDataToSend.append("id_number", formValues.idNumber || "")
-      formDataToSend.append("accommodation_details", accommodationDetails)
+      // Event/session info
+      formDataToSend.append("selected_event", "Global Skill Connect");
+      formDataToSend.append("workshopIds", formValues.sessions || "");
+      // Optional arrays (empty for now)
+      formDataToSend.append("selected_activities", "");
+      formDataToSend.append("selected_round_tables", "");
+
       // Log form data before sending
-      console.log("Form data being sent:", Object.fromEntries(formDataToSend))
+      console.log("Form data being sent:", Object.fromEntries(formDataToSend));
       // Add timeout to the fetch request
-      const controller = new AbortController()
-      const requestTimeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      const controller = new AbortController();
+      const requestTimeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       const response = await fetch(`${BACKEND_URL}/delegates`, {
         method: "POST",
         headers: {
@@ -918,20 +953,19 @@ export default function DelegateForm() {
         },
         body: formDataToSend,
         signal: controller.signal,
-      })
-      clearTimeout(requestTimeout)
+      });
+      clearTimeout(requestTimeout);
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Server error:", errorData)
-        throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`)
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`);
       }
-      const responseData = await response.json()
-      console.log("Registration successful:", responseData)
+      const responseData = await response.json();
+      console.log("Registration successful:", responseData);
       // Generate random registration ID between 001 and 500
-      const randomNumber = Math.floor(Math.random() * 500) + 1
-      const regId = `RFF${String(randomNumber).padStart(3, "0")}`
-      setRegistrationId(regId)
-      setIsSubmitted(true)
+      const randomNumber = Math.floor(Math.random() * 500) + 1;
+      const regId = `RFF${String(randomNumber).padStart(3, "0")}`;
+      setRegistrationId(regId);
+      setIsSubmitted(true);
       toast.success("Registration submitted successfully!", {
         style: {
           backgroundColor: "#dcfce7",
@@ -942,16 +976,16 @@ export default function DelegateForm() {
         },
         dismissible: true,
         duration: 4000,
-      })
+      });
     } catch (error) {
-      console.error("Registration error:", error)
+      console.error("Registration error:", error);
 
-      let errorMessage = "Failed to submit registration"
+      let errorMessage = "Failed to submit registration";
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          errorMessage = "Registration request timed out. Please try again."
+          errorMessage = "Registration request timed out. Please try again.";
         } else {
-          errorMessage = error.message
+          errorMessage = error.message;
         }
       }
       toast.error(errorMessage, {
@@ -964,9 +998,9 @@ export default function DelegateForm() {
         },
         dismissible: true,
         duration: 4000,
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
   // Check if current question has a value
@@ -1055,6 +1089,25 @@ export default function DelegateForm() {
           />
         )
       case "select":
+        if (currentQuestion.id === "delegateType") {
+          return (
+            <Select
+              value={getDelegateTypeLabel(formValues.delegateType)}
+              onValueChange={(label) => handleInputChange("delegateType", label)}
+            >
+              <SelectTrigger className="w-full max-w-full md:max-w-md mx-auto mt-6 h-12 text-lg">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
+                {delegateTypeOptions.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )
+        }
         return (
           <Select
             value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
@@ -1135,47 +1188,36 @@ export default function DelegateForm() {
       case "sessions":
         return (
           <div className="w-full max-w-2xl mx-auto mt-6">
-            {currentQuestion.description && (
-              <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.description}</div>
+            {workshopsLoading && <div className="text-center text-gray-500">Loading sessions...</div>}
+            {workshopsError && <div className="text-center text-red-500">{workshopsError}</div>}
+            {!workshopsLoading && !workshopsError && workshops.length === 0 && (
+              <div className="text-center text-gray-500">No sessions available.</div>
             )}
-
-            <RadioGroup
-              value={formValues.sessions || ""}
-              onValueChange={(value) => handleInputChange("sessions", value)}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="youth-engagement" id="youth-engagement" />
-                <Label htmlFor="youth-engagement" className="flex-1">
-                  <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
-                    <div className="flex justify-center mb-3">
-                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
-                        <div className="text-[#026FB4]">👥</div>
+            {!workshopsLoading && !workshopsError && workshops.length > 0 && (
+              <RadioGroup
+                value={formValues.sessions || ""}
+                onValueChange={(value) => handleInputChange("sessions", value)}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
+              >
+                {workshops.map((workshop) => (
+                  <div className="flex items-center space-x-2" key={workshop.id}>
+                    <RadioGroupItem value={workshop.id} id={workshop.id} />
+                    <Label htmlFor={workshop.id} className="flex-1">
+                      <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
+                        <div className="flex justify-center mb-3">
+                          <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
+                            <div className="text-[#026FB4]">🎯</div>
+                          </div>
+                        </div>
+                        <div className="font-medium text-lg mb-2">{workshop.title}</div>
+                        <div className="text-sm text-gray-500 mb-2">{workshop.venue} | {workshop.schedule ? new Date(workshop.schedule).toLocaleString() : ""}</div>
+                        <div className="text-sm font-medium mt-2 text-green-600">{workshop.capacity} capacity</div>
                       </div>
-                    </div>
-                    <div className="font-medium text-lg mb-2">Youth Engagement</div>
-                    <div className="text-sm text-gray-500 mb-2">Main Hall | June 4, 2025</div>
-                    <div className="text-sm font-medium mt-2 text-green-600">150 capacity</div>
+                    </Label>
                   </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="symposium" id="symposium" />
-                <Label htmlFor="symposium" className="flex-1">
-                  <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
-                    <div className="flex justify-center mb-3">
-                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
-                        <div className="text-[#026FB4]">🎯</div>
-                      </div>
-                    </div>
-                    <div className="font-medium text-lg mb-2">Symposium</div>
-                    <div className="text-sm text-gray-500 mb-2">Conference Hall | June 4, 2025</div>
-                    <div className="text-sm font-medium mt-2 text-green-600">200 capacity</div>
-                  </div>
-                </Label>
-              </div>
-            </RadioGroup>
+                ))}
+              </RadioGroup>
+            )}
           </div>
         )
       case "file":
@@ -1473,8 +1515,8 @@ export default function DelegateForm() {
                       displayValue = "Yes"
                     }
                   } else if (question.id === "sessions") {
-                    displayValue =
-                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
+                    const foundWorkshop = workshops.find(w => w.id === value)
+                    displayValue = foundWorkshop ? foundWorkshop.title : value
                     if (!displayValue) return null
                   } else if (question.id === "arrivalDateTime" || question.id === "departureDateTime") {
                     // Format datetime for display
@@ -1502,6 +1544,28 @@ export default function DelegateForm() {
   const circleCircumference = 2 * Math.PI * circleRadius
   const strokeDashoffset = circleCircumference * (1 - progress / 100)
   // Fetch workshops from API
+
+  // Get delegateType options from QUESTIONS
+  const delegateTypeOptions = QUESTIONS['professional-info'][0].options as string[];
+  const delegateTypeEnumValues = ["GOV", "SCH/PLT", "DP", "ENT", "EXP", "CSO"];
+
+  // Helper to map label to enum value
+  const getDelegateTypeEnum = (label: string): string => {
+    const idx = delegateTypeOptions.indexOf(label);
+    return idx !== -1 ? delegateTypeEnumValues[idx] : label;
+  };
+  // Helper to map enum value to label
+  const getDelegateTypeLabel = (value: string): string => {
+    const idx = delegateTypeEnumValues.indexOf(value);
+    return idx !== -1 ? delegateTypeOptions[idx] : value;
+  };
+
+  // 1. Make all fields required in QUESTIONS
+  Object.keys(QUESTIONS).forEach((stepKey) => {
+    QUESTIONS[stepKey].forEach((q) => {
+      q.required = true;
+    });
+  });
 
   return (
     <div className="container mx-auto p-2 sm:p-4 md:p-6">
@@ -1850,8 +1914,8 @@ export default function DelegateForm() {
                       displayValue = "Yes"
                     }
                   } else if (key === "sessions") {
-                    displayValue =
-                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
+                    const foundWorkshop = workshops.find(w => w.id === value)
+                    displayValue = foundWorkshop ? foundWorkshop.title : value
                     if (!displayValue) return null
                   } else if (key === "arrivalDateTime" || key === "departureDateTime") {
                     // Format datetime for display
@@ -1958,8 +2022,8 @@ export default function DelegateForm() {
                       displayValue = "Yes"
                     }
                   } else if (key === "sessions") {
-                    displayValue =
-                      value === "youth-engagement" ? "Youth Engagement" : value === "symposium" ? "Symposium" : value
+                    const foundWorkshop = workshops.find(w => w.id === value)
+                    displayValue = foundWorkshop ? foundWorkshop.title : value
                     if (!displayValue) return null
                   } else if (key === "arrivalDateTime" || key === "departureDateTime") {
                     // Format datetime for display
