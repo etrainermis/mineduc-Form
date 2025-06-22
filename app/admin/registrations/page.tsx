@@ -104,7 +104,7 @@ interface Registration {
 function useWorkshopTitles() {
   const [workshopMap, setWorkshopMap] = useState<Record<string, string>>({})
   useEffect(() => {
-    fetch("https://4theacworldkiswahili.mineduc.gov.rw/workshops")
+    fetch(`${BACKEND_URL}/workshops`)
       .then(res => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
