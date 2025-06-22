@@ -20,6 +20,14 @@ import { BACKEND_URL } from "@/lib/config";
 interface Delegate {
   id: string;
   registration_date: string;
+  workshop?: {
+    id: string;
+    title: string;
+    capacity: number;
+    [key: string]: any;
+  };
+  sessions?: string;
+  workshopIds?: string | string[];
   // Add other delegate properties as needed
 }
 
@@ -358,6 +366,8 @@ export function DashboardCharts({
   useEffect(() => {
     const fetchSessionDetails = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
         // Fetch workshops
         const workshopsRes = await fetch(`${BACKEND_URL}/workshops`, {
           method: "GET",
@@ -375,23 +385,62 @@ export function DashboardCharts({
         const delegates: Delegate[] = await delegatesRes.json();
 
         // For each workshop, count registrations
-        const sessionStats = workshops.map((workshop) => {
-          let registrations = 0;
-          delegates.forEach((delegate: any) => {
-            if (delegate.sessions === workshop.id) registrations++;
-            else if (Array.isArray(delegate.workshopIds) && delegate.workshopIds.includes(workshop.id)) registrations++;
-            else if (typeof delegate.workshopIds === 'string' && delegate.workshopIds === workshop.id) registrations++;
-          });
-          return {
+        // Build a map of workshopId -> { name, registrations, capacity }
+        const sessionMap = new Map();
+        // Add all workshops from the workshops endpoint
+        workshops.forEach((workshop) => {
+          sessionMap.set(workshop.id, {
             name: workshop.title,
-            registrations,
+            registrations: 0,
             capacity: workshop.capacity,
-            available: Math.max(0, workshop.capacity - registrations),
-          };
+            available: workshop.capacity,
+          });
         });
+        // Count delegates by their workshop object (if present)
+        delegates.forEach((delegate) => {
+          if (delegate.workshop && delegate.workshop.id) {
+            const w = delegate.workshop;
+            if (!sessionMap.has(w.id)) {
+              sessionMap.set(w.id, {
+                name: w.title || w.id,
+                registrations: 1,
+                capacity: w.capacity || 0,
+                available: (w.capacity || 0) - 1,
+              });
+            } else {
+              const s = sessionMap.get(w.id);
+              s.registrations++;
+              s.available = Math.max(0, s.capacity - s.registrations);
+              sessionMap.set(w.id, s);
+            }
+          } else {
+            // fallback to old logic
+            workshops.forEach((workshop) => {
+              if (delegate.sessions === workshop.id) {
+                const s = sessionMap.get(workshop.id);
+                s.registrations++;
+                s.available = Math.max(0, s.capacity - s.registrations);
+                sessionMap.set(workshop.id, s);
+              } else if (Array.isArray(delegate.workshopIds) && delegate.workshopIds.includes(workshop.id)) {
+                const s = sessionMap.get(workshop.id);
+                s.registrations++;
+                s.available = Math.max(0, s.capacity - s.registrations);
+                sessionMap.set(workshop.id, s);
+              } else if (typeof delegate.workshopIds === 'string' && delegate.workshopIds === workshop.id) {
+                const s = sessionMap.get(workshop.id);
+                s.registrations++;
+                s.available = Math.max(0, s.capacity - s.registrations);
+                sessionMap.set(workshop.id, s);
+              }
+            });
+          }
+        });
+        const sessionStats = Array.from(sessionMap.values());
         setSessionData(sessionStats);
       } catch (error) {
-        // Optionally handle error
+        setError("Unable to fetch session details. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchSessionDetails();
@@ -511,44 +560,52 @@ export function DashboardCharts({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sessionData.map((session, index) => (
-              <div key={session.name} className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-lg">{session.name}</h3>
-                  <div
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      session.registrations >= session.capacity * 0.9
-                        ? "bg-red-100 text-red-800"
-                        : session.registrations >= session.capacity * 0.7
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {Math.round((session.registrations / session.capacity) * 100)}% Full
+            {isLoading ? (
+              <div className="col-span-2 text-center text-gray-500">Loading session details...</div>
+            ) : error ? (
+              <div className="col-span-2 text-center text-red-500">{error}</div>
+            ) : sessionData.length === 0 ? (
+              <div className="col-span-2 text-center text-gray-500">No session data available.</div>
+            ) : (
+              sessionData.map((session) => (
+                <div key={session.name} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-lg">{session.name}</h3>
+                    <div
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        session.registrations >= session.capacity * 0.9
+                          ? "bg-red-100 text-red-800"
+                          : session.registrations >= session.capacity * 0.7
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {Math.round((session.registrations / session.capacity) * 100)}% Full
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Registered:</span>
+                      <span className="font-medium">{session.registrations}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Capacity:</span>
+                      <span className="font-medium">{session.capacity}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Available:</span>
+                      <span className="font-medium text-green-600">{session.available}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-[#026FB4] h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(session.registrations / session.capacity) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Registered:</span>
-                    <span className="font-medium">{session.registrations}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Capacity:</span>
-                    <span className="font-medium">{session.capacity}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Available:</span>
-                    <span className="font-medium text-green-600">{session.available}</span>
-                  </div>
-                </div>
-                <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-[#026FB4] h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(session.registrations / session.capacity) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
