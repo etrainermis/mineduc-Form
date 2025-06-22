@@ -1199,23 +1199,38 @@ export default function DelegateForm() {
                 onValueChange={(value) => handleInputChange("sessions", value)}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
               >
-                {workshops.map((workshop) => (
-                  <div className="flex items-center space-x-2" key={workshop.id}>
-                    <RadioGroupItem value={workshop.id} id={workshop.id} />
-                    <Label htmlFor={workshop.id} className="flex-1">
-                      <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
-                        <div className="flex justify-center mb-3">
-                          <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
-                            <div className="text-[#026FB4]">🎯</div>
+                {workshops.map((workshop) => {
+                  const isFull = workshop.registered >= workshop.capacity;
+                  const remainingCapacity = workshop.capacity - workshop.registered;
+                  return (
+                    <div className="flex items-center space-x-2" key={workshop.id}>
+                      <RadioGroupItem
+                        value={workshop.id}
+                        id={workshop.id}
+                        disabled={isFull}
+                        className={isFull ? "opacity-50 cursor-not-allowed" : ""}
+                      />
+                      <Label htmlFor={workshop.id} className="flex-1">
+                        <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
+                          <div className="flex justify-center mb-3">
+                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
+                              <div className="text-[#026FB4]">🎯</div>
+                            </div>
+                          </div>
+                          <div className="font-medium text-lg mb-2">{workshop.title}</div>
+                          <div className="text-sm text-gray-500 mb-2">{workshop.venue} | {workshop.schedule ? new Date(workshop.schedule).toLocaleString() : ""}</div>
+                          <div className="text-sm font-medium mt-2">
+                            {isFull ? (
+                              <span className="text-red-600 font-semibold">Full</span>
+                            ) : (
+                              <span className="text-green-600">{remainingCapacity} spots left</span>
+                            )}
                           </div>
                         </div>
-                        <div className="font-medium text-lg mb-2">{workshop.title}</div>
-                        <div className="text-sm text-gray-500 mb-2">{workshop.venue} | {workshop.schedule ? new Date(workshop.schedule).toLocaleString() : ""}</div>
-                        <div className="text-sm font-medium mt-2 text-green-600">{workshop.capacity} capacity</div>
-                      </div>
-                    </Label>
-                  </div>
-                ))}
+                      </Label>
+                    </div>
+                  );
+                })}
               </RadioGroup>
             )}
           </div>

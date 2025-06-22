@@ -1295,8 +1295,8 @@ export default function DelegateForm() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {morningWorkshops.map((workshop) => {
                       // Force workshop 2 to appear full
-                      const isFull = workshop.id === "ws2" ? true : workshop.registered >= workshop.capacity
-                      const remainingCapacity = workshop.id === "ws2" ? 0 : workshop.capacity - workshop.registered
+                      const isFull = workshop.registered >= workshop.capacity
+                      const remainingCapacity =  workshop.capacity - workshop.registered
                       return (
                         <div
                           key={`morning-${workshop.id}`}
