@@ -1489,7 +1489,7 @@ export default function DelegateForm() {
           </div>
           <h2 className="text-3xl font-bold mb-6 text-green-600">Registration Complete!</h2>
           <div className="max-w-md mx-auto bg-green-50 p-6 rounded-lg mb-8 border border-green-200">
-            <p className="text-gray-700 text-lg mb-4">Thank you for registering for the FutureSkills Forum!</p>
+            <p className="text-gray-700 text-lg mb-4">Thank you for registering for the 4th EAC World Kiswahili Language Day Celebrations!</p>
             <p className="text-gray-600">
               You will soon receive confirmation to <span className="font-bold">{formValues.email}</span> with all the
               details.
