@@ -26,6 +26,7 @@ interface Delegate {
 interface Workshop {
   id: string;
   title: string;
+  capacity: number;
   // Add other workshop properties as needed
 }
 
@@ -71,10 +72,12 @@ export function DashboardCharts({
   const [workshopsCount, setWorkshopsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sessionData, setSessionData] = useState([
-    { name: "Symposium", registrations: 0, capacity: 200, available: 200 },
-    { name: "Youth Engagement", registrations: 0, capacity: 150, available: 150 },
-  ])
+  const [sessionData, setSessionData] = useState<{
+    name: string;
+    registrations: number;
+    capacity: number;
+    available: number;
+  }[]>([]);
 
   // Comment out unused variable or use it in the component
   // const [delegatesData, setDelegatesData] = useState<Delegate[]>([])
@@ -350,6 +353,49 @@ export function DashboardCharts({
     if (percentage >= 20) return "bg-orange-500"; // Low attendance (20-39%)
     return "bg-red-500"; // Very low attendance (0-19%)
   };
+
+  // Fetch real session/workshop data for Session Details Card
+  useEffect(() => {
+    const fetchSessionDetails = async () => {
+      try {
+        // Fetch workshops
+        const workshopsRes = await fetch(`${BACKEND_URL}/workshops`, {
+          method: "GET",
+          headers: { accept: "*/*" },
+        });
+        if (!workshopsRes.ok) throw new Error("Failed to fetch workshops");
+        const workshops: Workshop[] = await workshopsRes.json();
+
+        // Fetch delegates
+        const delegatesRes = await fetch(`${BACKEND_URL}/delegates`, {
+          method: "GET",
+          headers: { accept: "*/*" },
+        });
+        if (!delegatesRes.ok) throw new Error("Failed to fetch delegates");
+        const delegates: Delegate[] = await delegatesRes.json();
+
+        // For each workshop, count registrations
+        const sessionStats = workshops.map((workshop) => {
+          let registrations = 0;
+          delegates.forEach((delegate: any) => {
+            if (delegate.sessions === workshop.id) registrations++;
+            else if (Array.isArray(delegate.workshopIds) && delegate.workshopIds.includes(workshop.id)) registrations++;
+            else if (typeof delegate.workshopIds === 'string' && delegate.workshopIds === workshop.id) registrations++;
+          });
+          return {
+            name: workshop.title,
+            registrations,
+            capacity: workshop.capacity,
+            available: Math.max(0, workshop.capacity - registrations),
+          };
+        });
+        setSessionData(sessionStats);
+      } catch (error) {
+        // Optionally handle error
+      }
+    };
+    fetchSessionDetails();
+  }, []);
 
   return (
     <div className="space-y-3">
