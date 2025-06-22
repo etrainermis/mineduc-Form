@@ -492,7 +492,7 @@ export default function DelegateForm() {
       setWorkshopsLoading(true)
       setWorkshopsError(null)
       try {
-        const res = await fetch("https://4theacworldkiswahili.mineduc.gov.rw/workshops")
+        const res = await fetch(`${BACKEND_URL}/workshops`)
         if (!res.ok) throw new Error("Failed to fetch workshops")
         const data = await res.json()
         setWorkshops(Array.isArray(data) ? data : [])
