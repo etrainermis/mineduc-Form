@@ -463,7 +463,7 @@ export default function RegistrationsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Delegate Registrations</h1>
-          <p className="text-gray-600 mt-2">Manage and view all delegate registrations for Global Skill Connect</p>
+          <p className="text-gray-600 mt-2">Manage and view all delegate registrations for 4th EAC World Kiswahili Language Day Celebrations</p>
         </div>
         <UserProfile />
       </div>

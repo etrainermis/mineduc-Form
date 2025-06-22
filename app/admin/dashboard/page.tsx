@@ -69,7 +69,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Welcome to your Global Skill Connect event management dashboard. Here&apos;s an overview of your event
+              Welcome to your 4th EAC World Kiswahili Language Day Celebrations event management dashboard. Here&apos;s an overview of your event
               sessions and delegate registrations.
             </p>
           </CardContent>
