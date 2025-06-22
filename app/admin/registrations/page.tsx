@@ -199,7 +199,7 @@ export default function RegistrationsPage() {
             departure_datetime: delegate.departure_datetime || "",
             airline: delegate.airline || "",
             registration_date: delegate.registration_date,
-            selected_event: "4th EAC World Kiswahili Language Day Celebrations",
+            selected_event: "Global Skill Connect",
             selected_activities: delegate.selected_activities || [],
             workshops: workshopTitles,
             role: delegate.role || "Delegate",
@@ -463,7 +463,7 @@ export default function RegistrationsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Delegate Registrations</h1>
-          <p className="text-gray-600 mt-2">Manage and view all delegate registrations for 4th EAC World Kiswahili Language Day Celebrations</p>
+          <p className="text-gray-600 mt-2">Manage and view all delegate registrations for Global Skill Connect</p>
         </div>
         <UserProfile />
       </div>

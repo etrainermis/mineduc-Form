@@ -935,7 +935,7 @@ export default function DelegateForm() {
         formDataToSend.append("airline", formValues.airline || "");
       }
       // Event/session info
-      formDataToSend.append("selected_event", "4th EAC World Kiswahili Language Day Celebrations");
+      formDataToSend.append("selected_event", "Global Skill Connect");
       formDataToSend.append("workshopIds", formValues.sessions || "");
       // Optional arrays (empty for now)
       formDataToSend.append("selected_activities", "");
