@@ -15,7 +15,7 @@ export default function HeroSection() {
         ref={backgroundRef}
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: "url(/hero.png)",
+          backgroundImage: "url(/kiswahili.jpeg)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
