@@ -88,8 +88,7 @@ interface Registration {
   special_needs: string
   accommodation_status: string
   accommodation_details: string
-  id_type: string
-  id_number: string
+  national_id: string
   arrival_datetime: string
   departure_datetime: string
   airline: string
@@ -194,7 +193,7 @@ export default function RegistrationsPage() {
             accommodation_status: delegate.accommodation_status || "",
             accommodation_details: delegate.accommodation_details || "",
             id_type: delegate.id_type || "",
-            id_number: delegate.id_number || "",
+            national_id: delegate.national_id || delegate.id_number || "",
             arrival_datetime: delegate.arrival_datetime || "",
             departure_datetime: delegate.departure_datetime || "",
             airline: delegate.airline || "",
@@ -292,8 +291,7 @@ export default function RegistrationsPage() {
             special_needs: editForm.special_needs,
             accommodation_status: editForm.accommodation_status,
             accommodation_details: editForm.accommodation_details,
-            id_type: editForm.id_type,
-            id_number: editForm.id_number,
+            national_id: editForm.national_id,
             arrival_datetime: editForm.arrival_datetime,
             departure_datetime: editForm.departure_datetime,
             airline: editForm.airline,
@@ -402,8 +400,7 @@ export default function RegistrationsPage() {
       Position: (item: Registration) => item.position,
       "Accommodation Status": (item: Registration) => item.accommodation_status,
       "Accommodation Details": (item: Registration) => item.accommodation_details,
-      "ID Type": (item: Registration) => item.id_type,
-      "ID Number": (item: Registration) => item.id_number,
+      "National ID": (item: Registration) => item.national_id,
       "Arrival Date/Time": (item: Registration) =>
         item.arrival_datetime ? new Date(item.arrival_datetime).toLocaleString() : "",
       "Departure Date/Time": (item: Registration) =>
@@ -703,20 +700,20 @@ export default function RegistrationsPage() {
                     </div>
                   </div>
 
-                  {selectedRegistration.id_type && (
+                  {selectedRegistration.national_id && (
                     <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                       <h4 className="font-medium mb-2 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
                         Identification
                       </h4>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
+                        {/* <div>
                           <Label className="text-sm text-gray-600">ID Type</Label>
                           <p>{selectedRegistration.id_type}</p>
-                        </div>
+                        </div> */}
                         <div>
-                          <Label className="text-sm text-gray-600">ID Number</Label>
-                          <p className="font-mono">{selectedRegistration.id_number}</p>
+                          <Label className="text-sm text-gray-600">ID Number OR Passport</Label>
+                          <p className="font-mono">{selectedRegistration.national_id}</p>
                         </div>
                       </div>
                     </div>
@@ -726,7 +723,7 @@ export default function RegistrationsPage() {
                 <TabsContent value="professional" className="space-y-4">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label className="font-medium text-gray-700">Delegate Type</Label>
+                      <Label className="font-medium text-gray-700">Delegate Type : </Label>
                       <Badge
                         variant="outline"
                         className={`${getDelegateTypeBadgeStyle(selectedRegistration.delegate_type)} text-base px-3 py-1`}
@@ -830,7 +827,7 @@ export default function RegistrationsPage() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label className="font-medium text-gray-700">Selected Event</Label>
-                      <p className="text-lg font-medium text-[#026FB4]">{selectedRegistration.selected_event}</p>
+                      <p className="text-lg font-medium text-[#026FB4]"> 4th EAC World Kiswahili Language Day Celebrations</p>
                     </div>
                     <div className="space-y-2">
                       <Label className="font-medium text-gray-700">Registration Date</Label>

@@ -51,12 +51,12 @@ const navItems: NavItem[] = [
     icon: Users,
     roles: ["admin", "coordinator"],
   },
-  {
-    title: "Events",
-    href: "/events",
-    icon: CalendarDays,
-    roles: ["admin", "coordinator"],
-  },
+  // {
+  //   title: "Events",
+  //   href: "/events",
+  //   icon: CalendarDays,
+  //   roles: ["admin", "coordinator"],
+  // },
   {
     title: "Speakers",
     href: "/speakers",
