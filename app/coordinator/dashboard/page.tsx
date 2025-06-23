@@ -1,50 +1,81 @@
 "use client"
-
-import { useState } from "react"
-import { DashboardStats } from "@/components/dashboard-stats"
 import { DashboardCharts } from "@/components/dashboard-charts"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DashboardStats } from "@/components/dashboard-stats"
 import { UserProfile } from "@/components/users/UserProfile"
+import { useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
+import type { UUID } from "crypto"
+import { BACKEND_URL } from "@/lib/config"
+
+interface DecodedToken {
+  id: UUID
+  lastName: string
+  role_name: string
+  exp: number
+  iat: number
+}
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [userName, setUserName] = useState<string>("")
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("access")
+      if (token) {
+        try {
+          const decoded = jwtDecode<DecodedToken>(token)
+          console.log("Decoded token:", decoded)
+
+          const response = await fetch(`${BACKEND_URL}/users/${decoded.id}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              accept: "*/*",
+            },
+          })
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const data = await response.json()
+          console.log("Fetched user data:", data)
+
+          setUserName(data.firstName)
+        } catch (error) {
+          console.error("Error fetching user data:", error)
+        }
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   return (
-    <div className="p-6">
+    <div>
       <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome Coordinator 👋</h1>
-          <p className="text-gray-600 mt-2">Here&apos;s what&apos;s happening in your dashboard today</p>
-        </div>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <UserProfile />
       </div>
-
-      <DashboardStats />
-
       <div className="mb-8">
-        <div className="flex space-x-4 border-b border-gray-200">
-          <button
-            className={`pb-2 px-1 ${
-              activeTab === "overview"
-                ? "border-b-2 border-[#026FB4] text-[#026FB4]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("overview")}
-          >
-            Overview
-          </button>
-          <button
-            className={`pb-2 px-1 ${
-              activeTab === "analytics"
-                ? "border-b-2 border-[#026FB4] text-[#026FB4]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("analytics")}
-          >
-            Analytics
-          </button>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">
+              <div className="flex items-center ">
+                <span>Welcome 👋, {userName || "User"}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Welcome to your 4th EAC World Kiswahili Language Day Celebrations event management dashboard. Here&apos;s an overview of your event
+              sessions and delegate registrations.
+            </p>
+          </CardContent>
+        </Card>
       </div>
-
+      <DashboardStats />
       <DashboardCharts />
     </div>
   )

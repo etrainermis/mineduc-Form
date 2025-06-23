@@ -105,7 +105,7 @@ export function DashboardStats() {
     {
       title: "Total Delegates",
       value: isLoading ? "..." : totalDelegates.toString(),
-      description: "Registered for Global Skill Connect",
+      description: "Registered for 4th EAC World Kiswahili Language Day Celebrations",
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",

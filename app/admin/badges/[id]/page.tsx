@@ -390,17 +390,29 @@ export default function BadgePreviewPage() {
                   id="front-badge"
                   ref={frontBadgeRef}
                   className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
-                 style={{
-  borderTop: '6px solid',
-  borderBottom: '6px solid',
-  borderLeft: '6px solid #1565C0',
-  borderRight: '6px solid #1565C0',
-  borderImageSource: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)',
-  borderImageSlice: '1',
-}}
+                  style={{
+                    borderLeft: '6px solid #1565C0',
+                    borderRight: '6px solid #1565C0',
+                  }}
                 >
+                  {/* Top stripes */}
+                  <div style={{position:'absolute', left:0, top:0, width:'100%', height:'6px', borderTopLeftRadius:'16px', borderTopRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+                  {/* Bottom stripes */}
+                  <div style={{position:'absolute', left:0, bottom:0, width:'100%', height:'6px', borderBottomLeftRadius:'16px', borderBottomRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+                  {/* EAC Logo top-left corner */}
+                  <div style={{position:'absolute', left:10, top:10, zIndex:3}}>
+                    <Image src="/eac.jpeg" alt="EAC Logo" width={38} height={38} style={{objectFit:'contain', borderRadius:'8px'}} />
+                  </div>
+                  {/* Repubulika Logo top-right corner */}
+                  <div style={{position:'absolute', right:10, top:10, zIndex:3}}>
+                    <Image src="/repub.jpeg" alt="Rwanda Logo" width={38} height={38} style={{objectFit:'contain', borderRadius:'8px'}} />
+                  </div>
+                  {/* EAC Logo center */}
+                  {/* <div className="flex justify-center items-center mt-4 mb-2">
+                    <Image src="/eac.jpeg" alt="EAC Logo" width={54} height={54} style={{objectFit:'contain'}} />
+                  </div> */}
                   {/* Profile picture */}
-                  <div className="mt-10 mb-4 flex justify-center">
+                  <div className="mt-2 mb-4 flex justify-center">
                     <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-[#43A047] bg-white shadow">
                       <Image
                         src={delegate.profile_picture_url || "/man.svg"}
@@ -418,7 +430,7 @@ export default function BadgePreviewPage() {
                     <p className="text-lg font-semibold text-[#1B5E20]">
                       {delegate.organization}
                     </p>
-                    <p className="text-lg text-[#F9A825] font-medium">
+                    <p className="text-lg  text-[#1565C0] font-medium">
                       {delegate.country}
                     </p>
                   </div>
@@ -430,14 +442,21 @@ export default function BadgePreviewPage() {
                   ref={backBadgeRef}
                   className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
                   style={{
-                    borderTop: '6px solid',
-                    borderBottom: '6px solid',
                     borderLeft: '6px solid #1565C0',
                     borderRight: '6px solid #1565C0',
-                    borderImageSource: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)',
-                    borderImageSlice: '1',
                   }}
                 >
+                  {/* Top stripes */}
+                  <div style={{position:'absolute', left:0, top:0, width:'100%', height:'6px', borderTopLeftRadius:'16px', borderTopRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+                  {/* Bottom stripes */}
+                  <div style={{position:'absolute', left:0, bottom:0, width:'100%', height:'6px', borderBottomLeftRadius:'16px', borderBottomRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+                  {/* Delegate ID component */}
+                  <div className="relative flex flex-col w-full items-center mt-8 mb-6">
+                    <div className="mb-4 rounded-xl bg-gradient-to-r from-[#1565C0]/10 via-[#1565C0]/20 to-[#43A047]/10 p-3 text-center shadow-sm w-3/4 mx-auto">
+                      <p className="text-base font-semibold text-[#1565C0]">Delegate ID</p>
+                      <p className="mt-0.5 font-mono text-lg font-bold tracking-wider text-[#1565C0]">{generateRegistrationId(delegate.id)}</p>
+                    </div>
+                  </div>
                   <div className="flex flex-col justify-center items-center h-full w-full">
                     <h2 className="text-lg font-bold text-[#1565C0] text-center mb-2">4th World Kiswahili Day Celebrations<br/>Kigali - Rwanda</h2>
                     <h3 className="text-base font-semibold text-[#43A047] text-center mt-2">Maadhimisho ya Nne ya Siku ya Kiswahili Duniani<br/>Kigali- Rwanda</h3>

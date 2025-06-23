@@ -89,16 +89,16 @@ const Badge = ({ user, side = "front" }: { user: Delegate; side?: "front" | "bac
       backgroundColor: "#ffffff",
     },
     primaryText: {
-      color: "#026FB4",
+      color: "#43A047",
     },
     grayText: {
       color: "#4B5563",
     },
     border: {
-      border: "4px solid #026FB4",
+      border: "4px solid #43A047",
     },
     primaryBackground: {
-      backgroundColor: "#026FB4",
+      backgroundColor: "#43A047",
     },
     whiteText: {
       color: "#ffffff",
@@ -602,7 +602,7 @@ export default function BadgesPage() {
                           style={{ background: "linear-gradient(to bottom right, transparent, #F9FAFB)" }}
                         />
                         <div className="relative">
-                          <Link href={`/coordinator/badges/${delegate.id}`}>
+                          <Link href={`/admin/badges/${delegate.id}`}>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -616,7 +616,7 @@ export default function BadgesPage() {
                               <IdCardIcon className="h-4.5 w-4.5" />
                             </Button>
                           </Link>
-                          <Link href={`/coordinator/badges/${delegate.id}`} className="flex flex-col items-center">
+                          <Link href={`/admin/badges/${delegate.id}`} className="flex flex-col items-center">
                             <div
                               className="relative mb-4 h-24 w-24 overflow-hidden rounded-full shadow-lg group-hover:scale-105 transition-transform duration-300"
                               style={{ border: "4px solid #026FB4" }}
@@ -642,7 +642,7 @@ export default function BadgesPage() {
                               style={{ backgroundColor: "rgba(2, 111, 180, 0.1)" }}
                             >
                               <p className="text-sm font-medium" style={{ color: "#026FB4" }}>
-                                {delegate.selected_event}
+                                {delegate.organization}
                               </p>
                             </div>
                           </Link>
