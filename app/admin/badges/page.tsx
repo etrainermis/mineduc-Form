@@ -89,16 +89,16 @@ const Badge = ({ user, side = "front" }: { user: Delegate; side?: "front" | "bac
       backgroundColor: "#ffffff",
     },
     primaryText: {
-      color: "#026FB4",
+      color: "#43A047",
     },
     grayText: {
       color: "#4B5563",
     },
     border: {
-      border: "4px solid #026FB4",
+      border: "4px solid #43A047",
     },
     primaryBackground: {
-      backgroundColor: "#026FB4",
+      backgroundColor: "#43A047",
     },
     whiteText: {
       color: "#ffffff",

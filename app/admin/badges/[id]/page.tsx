@@ -32,6 +32,7 @@ interface Delegate {
     schedule: string;
     capacity: number;
   }>;
+  country: string;
 }
 
 export default function BadgePreviewPage() {
@@ -388,74 +389,38 @@ export default function BadgePreviewPage() {
                 <div
                   id="front-badge"
                   ref={frontBadgeRef}
-                  className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl border-2 bg-white p-6 shadow-lg mx-auto hover:shadow-xl transition-shadow duration-200"
+                  className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
+                 style={{
+  borderTop: '6px solid',
+  borderBottom: '6px solid',
+  borderLeft: '6px solid #1565C0',
+  borderRight: '6px solid #1565C0',
+  borderImageSource: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)',
+  borderImageSlice: '1',
+}}
                 >
-                  <div className="absolute inset-0">
-                    <div className="absolute -left-12 -top-12 h-24 w-48 rotate-45 bg-[#026FB4]/20"></div>
-                    <div className="absolute -right-12 -top-12 h-24 w-48 rotate-45 bg-[#026FB4]/20"></div>
-                    <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#026FB4]/10"></div>
-                  </div>
-
-                  <div className="relative flex h-full flex-col items-center py-4">
-                    <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+                  {/* Profile picture */}
+                  <div className="mt-10 mb-4 flex justify-center">
+                    <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-[#43A047] bg-white shadow">
                       <Image
-                        src="/logo.svg"
-                        alt="FutureSkills Logo"
-                        width={160}
-                        height={45}
-                        className="mb-2"
+                        src={delegate.profile_picture_url || "/man.svg"}
+                        alt={`${delegate.firstName} ${delegate.lastName}`}
+                        width={128}
+                        height={128}
+                        className="object-cover w-full h-full"
                       />
-
-                      <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-[#026FB4] shadow-md">
-                        {profileImage ? (
-                          // Use the preloaded image if available
-                          <Image
-                            src={profileImage || "/placeholder.svg"}
-                            alt={`${delegate.firstName} ${delegate.lastName}'s photo`}
-                            fill
-                            className="object-cover"
-                            unoptimized={true} // Since we're using a data URL
-                            priority={true} // This is likely an important image above the fold
-                          />
-                        ) : (
-                          // Fallback to regular Image component
-                          <Image
-                            src={delegate.profile_picture_url || "/man.svg"}
-                            alt={`${delegate.firstName} ${delegate.lastName}'s photo`}
-                            fill
-                            className="object-cover"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/man.svg";
-                            }}
-                          />
-                        )}
-                      </div>
-
-                      <div className="text-center space-y-1">
-                        <h3 className="text-2xl font-bold text-[#026FB4]">
-                          {delegate.firstName} {delegate.lastName}
-                        </h3>
-                        <p className="text-base text-gray-600 font-medium">
-                          {delegate.position}
-                        </p>
-                        <p className="text-base text-gray-600">
-                          {delegate.organization}
-                        </p>
-                      </div>
                     </div>
-
-                    <div className="mt-auto">
-                      <div className="rounded-xl border-2 border-[#026FB4] bg-white p-2 shadow-md">
-                        <QRCode
-                          value={`${"http://rwandafutureskillsforum.rtb.gov.rw"}/verify/${
-                            delegate.id
-                          }`}
-                          size={100}
-                          className="rounded-lg"
-                        />
-                      </div>
-                    </div>
+                  </div>
+                  <div className="text-center space-y-2 mt-2">
+                    <h3 className="text-2xl font-bold text-[#222] drop-shadow-none">
+                      {delegate.firstName} {delegate.lastName}
+                    </h3>
+                    <p className="text-lg font-semibold text-[#1B5E20]">
+                      {delegate.organization}
+                    </p>
+                    <p className="text-lg text-[#F9A825] font-medium">
+                      {delegate.country}
+                    </p>
                   </div>
                 </div>
 
@@ -463,75 +428,19 @@ export default function BadgePreviewPage() {
                 <div
                   id="back-badge"
                   ref={backBadgeRef}
-                  className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl border-2 bg-white p-6 shadow-lg mx-auto hover:shadow-xl transition-shadow duration-200"
+                  className="relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
+                  style={{
+                    borderTop: '6px solid',
+                    borderBottom: '6px solid',
+                    borderLeft: '6px solid #1565C0',
+                    borderRight: '6px solid #1565C0',
+                    borderImageSource: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)',
+                    borderImageSlice: '1',
+                  }}
                 >
-                  <div className="absolute inset-0">
-                    <div className="absolute -left-12 -top-12 h-24 w-48 rotate-45 bg-[#026FB4]/20"></div>
-                    <div className="absolute -right-12 -top-12 h-24 w-48 rotate-45 bg-[#026FB4]/20"></div>
-                  </div>
-
-                  <div className="relative flex h-full flex-col">
-                    <div className="mb-4 rounded-xl bg-gradient-to-r from-[#026FB4]/10 via-[#026FB4]/20 to-[#026FB4]/10 p-3 text-center shadow-sm">
-                      <p className="text-base font-semibold text-[#026FB4]">
-                        Delegate ID
-                      </p>
-                      <p className="mt-0.5 font-mono text-lg font-bold tracking-wider text-[#026FB4]">
-                        {generateRegistrationId(delegate.id)}
-                      </p>
-                    </div>
-
-                    <h4 className="mb-4 text-center text-lg font-semibold text-[#026FB4]">
-                      Your Workshops
-                    </h4>
-
-                    <div className="flex-1 space-y-3 overflow-y-auto">
-                      {workshops.map((workshop) => {
-                        const { date, time } = getWorkshopSchedule(workshop);
-
-                        return (
-                          <div
-                            key={workshop.id}
-                            className="rounded-xl border-2 border-[#026FB4]/20 bg-[#026FB4]/5 p-3 shadow-sm transition-all duration-200 hover:bg-[#026FB4]/10 hover:shadow-md"
-                          >
-                            <p className="text-sm font-bold text-gray-800">
-                              {workshop.title}
-                            </p>
-                            <div className="mt-2 flex flex-col">
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-[#026FB4]">
-                                  Venue:
-                                </span>
-                                <span className="text-xs text-gray-700">
-                                  {workshop.venue}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-[#026FB4]">
-                                  Date:
-                                </span>
-                                <span className="text-xs text-gray-700">
-                                  {date}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-[#026FB4]">
-                                  Time:
-                                </span>
-                                <span className="text-xs text-gray-700">
-                                  {time}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="mt-4 text-center">
-                      <p className="text-sm font-medium text-[#026FB4]/60">
-                        Please keep this badge with you at all times
-                      </p>
-                    </div>
+                  <div className="flex flex-col justify-center items-center h-full w-full">
+                    <h2 className="text-lg font-bold text-[#1565C0] text-center mb-2">4th World Kiswahili Day Celebrations<br/>Kigali - Rwanda</h2>
+                    <h3 className="text-base font-semibold text-[#43A047] text-center mt-2">Maadhimisho ya Nne ya Siku ya Kiswahili Duniani<br/>Kigali- Rwanda</h3>
                   </div>
                 </div>
               </div>

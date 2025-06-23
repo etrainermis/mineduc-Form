@@ -45,12 +45,12 @@ const navItems: NavItem[] = [
     icon: ClipboardList,
     roles: ["admin", "coordinator", "event-organizer"],
   },
-  {
-    title: "Users",
-    href: "/users",
-    icon: Users,
-    roles: ["admin", "coordinator"],
-  },
+  // {
+  //   title: "Users",
+  //   href: "/users",
+  //   icon: Users,
+  //   roles: ["admin", "coordinator"],
+  // },
   // {
   //   title: "Events",
   //   href: "/events",
