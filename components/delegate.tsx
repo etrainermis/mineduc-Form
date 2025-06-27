@@ -1053,12 +1053,13 @@ export default function DelegateForm() {
       formDataToSend.append("username", formValues.email || "");
       formDataToSend.append("myGender", formValues.gender || "");
       formDataToSend.append("role", "DELEGATE");
-      formDataToSend.append(
-        "national_id",
-        formValues.idType === "National ID Number"
-          ? formValues.idNumber || ""
-          : ""
-      );
+      if (
+        formValues.idType === "National ID Number" ||
+        formValues.idType === "Passport Number"
+      ) {
+        formDataToSend.append("national_id", formValues.idNumber?.trim() || "");
+      }
+
       formDataToSend.append("phonenumber", formValues.phoneNumber || "");
       formDataToSend.append("delegate_type", formValues.delegateType || "");
       formDataToSend.append("country", formValues.country || "");
@@ -1097,13 +1098,6 @@ export default function DelegateForm() {
       );
       // Travel info
       if (formValues.state === "Rwanda") {
-        formDataToSend.append("mode_of_transport", "ROAD");
-        formDataToSend.append("boarder_name", ""); // HINDUYE hano
-        formDataToSend.append("road_arrival_datetime", ""); // HINDUYE hano
-        formDataToSend.append("road_departure_datetime", ""); // HINDUYE hano
-        formDataToSend.append("arrival_datetime", "");
-        formDataToSend.append("departure_datetime", "");
-        formDataToSend.append("airline", "");
       } else if (formValues.modeOfTransport === "Airline Transport") {
         formDataToSend.append("mode_of_transport", "AIRLINE");
         formDataToSend.append("boarder_name", "");
