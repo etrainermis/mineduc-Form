@@ -352,14 +352,14 @@ const QUESTIONS: Record<string, Question[]> = {
     {
       id: "roadArrivalDate",
       question: "Arrival date (Road Transport)",
-      type: "date",
+      type: "datetime-local",
       previewLabel: "Arrival Date (Road)",
       required: true,
     },
     {
       id: "roadDepartureDate",
       question: "Departure date (Road Transport)",
-      type: "date",
+      type: "datetime-local",
       previewLabel: "Departure Date (Road)",
       required: true,
     },
@@ -1098,9 +1098,9 @@ export default function DelegateForm() {
       // Travel info
       if (formValues.state === "Rwanda") {
         formDataToSend.append("mode_of_transport", "ROAD");
-        formDataToSend.append("boarder_name", "N/A");
-        formDataToSend.append("road_arrival_datetime", "N/A");
-        formDataToSend.append("road_departure_datetime", "N/A");
+        formDataToSend.append("boarder_name", ""); // HINDUYE hano
+        formDataToSend.append("road_arrival_datetime", ""); // HINDUYE hano
+        formDataToSend.append("road_departure_datetime", ""); // HINDUYE hano
         formDataToSend.append("arrival_datetime", "");
         formDataToSend.append("departure_datetime", "");
         formDataToSend.append("airline", "");
@@ -1121,11 +1121,15 @@ export default function DelegateForm() {
         formDataToSend.append("boarder_name", formValues.boarderName || "");
         formDataToSend.append(
           "road_arrival_datetime",
-          formValues.roadArrivalDate || ""
+          formValues.roadArrivalDate
+            ? new Date(formValues.roadArrivalDate).toISOString()
+            : ""
         );
         formDataToSend.append(
           "road_departure_datetime",
-          formValues.roadDepartureDate || ""
+          formValues.roadDepartureDate
+            ? new Date(formValues.roadDepartureDate).toISOString()
+            : ""
         );
         formDataToSend.append("airline", "");
       } else {
