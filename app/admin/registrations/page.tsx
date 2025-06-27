@@ -70,6 +70,10 @@ interface DelegateApiResponse {
   selected_activities?: string[]
   workshops?: Array<{ title: string }>
   role?: string
+  mode_of_transport?: string
+  boarder_name?: string
+  road_arrival_datetime?: string
+  road_departure_datetime?: string
 }
 
 interface Registration {
@@ -97,6 +101,10 @@ interface Registration {
   selected_activities: string[]
   workshops: string[]
   role: string
+  mode_of_transport?: string
+  boarder_name?: string
+  road_arrival_datetime?: string
+  road_departure_datetime?: string
 }
 
 // Add a hook to fetch all workshops and map IDs to titles
@@ -202,6 +210,10 @@ export default function RegistrationsPage() {
             selected_activities: delegate.selected_activities || [],
             workshops: workshopTitles,
             role: delegate.role || "Delegate",
+            mode_of_transport: delegate.mode_of_transport,
+            boarder_name: delegate.boarder_name,
+            road_arrival_datetime: delegate.road_arrival_datetime,
+            road_departure_datetime: delegate.road_departure_datetime,
           }
         })
 
@@ -298,6 +310,10 @@ export default function RegistrationsPage() {
             selected_event: editForm.selected_event,
             selected_activities: editForm.selected_activities,
             role: editForm.role,
+            mode_of_transport: editForm.mode_of_transport,
+            boarder_name: editForm.boarder_name,
+            road_arrival_datetime: editForm.road_arrival_datetime,
+            road_departure_datetime: editForm.road_departure_datetime,
           }),
         })
 
@@ -749,40 +765,80 @@ export default function RegistrationsPage() {
                 </TabsContent>
 
                 <TabsContent value="travel" className="space-y-4">
-                  {selectedRegistration.partner_state !== "Rwanda" ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="font-medium text-gray-700">Arrival Date & Time</Label>
-                          <p className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-green-600" />
-                            {selectedRegistration.arrival_datetime
-                              ? new Date(selectedRegistration.arrival_datetime).toLocaleString()
-                              : "Not specified"}
-                          </p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="font-medium text-gray-700">Departure Date & Time</Label>
-                          <p className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-red-600" />
-                            {selectedRegistration.departure_datetime
-                              ? new Date(selectedRegistration.departure_datetime).toLocaleString()
-                              : "Not specified"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="font-medium text-gray-700">Airline</Label>
-                        <p className="flex items-center gap-2">
-                          <Plane className="h-4 w-4 text-blue-600" />
-                          {selectedRegistration.airline || "Not specified"}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
+                  {selectedRegistration.partner_state === "Rwanda" ? (
                     <div className="text-center py-8 text-gray-500">
                       <MapPin className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                      <p>Local delegate - No travel information required</p>
+                      <p>No travel info gathered.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="font-medium text-gray-700">Mode of Transport</Label>
+                        <p className="flex items-center gap-2">
+                          {selectedRegistration.mode_of_transport || "Not specified"}
+                        </p>
+                      </div>
+                      {selectedRegistration.mode_of_transport === "ROAD" ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="font-medium text-gray-700">Border Name</Label>
+                              <p className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-green-600" />
+                                {selectedRegistration.boarder_name || "Not specified"}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="font-medium text-gray-700">Road Arrival Date & Time</Label>
+                              <p className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-green-600" />
+                                {selectedRegistration.road_arrival_datetime
+                                  ? new Date(selectedRegistration.road_arrival_datetime).toLocaleString()
+                                  : "Not specified"}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="font-medium text-gray-700">Road Departure Date & Time</Label>
+                              <p className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-red-600" />
+                                {selectedRegistration.road_departure_datetime
+                                  ? new Date(selectedRegistration.road_departure_datetime).toLocaleString()
+                                  : "Not specified"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="font-medium text-gray-700">Arrival Date & Time</Label>
+                              <p className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-green-600" />
+                                {selectedRegistration.arrival_datetime
+                                  ? new Date(selectedRegistration.arrival_datetime).toLocaleString()
+                                  : "Not specified"}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="font-medium text-gray-700">Departure Date & Time</Label>
+                              <p className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-red-600" />
+                                {selectedRegistration.departure_datetime
+                                  ? new Date(selectedRegistration.departure_datetime).toLocaleString()
+                                  : "Not specified"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="font-medium text-gray-700">Airline</Label>
+                            <p className="flex items-center gap-2">
+                              <Plane className="h-4 w-4 text-blue-600" />
+                              {selectedRegistration.airline || "Not specified"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </TabsContent>

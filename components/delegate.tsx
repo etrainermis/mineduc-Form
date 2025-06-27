@@ -309,22 +309,52 @@ const QUESTIONS: Record<string, Question[]> = {
     },
     {
       id: "state",
-      question: "What is your partner state ?",
+      question: "What is your partner state?",
       type: "state",
       previewLabel: "Partner state",
       required: true,
     },
-    // Travel info questions - conditional based on partner state
+    // Travel logic fields (conditional)
+    {
+      id: "modeOfTransport",
+      question: "Mode of Transport",
+      type: "mode-of-transport",
+      options: ["Airline Transport", "Road Transport"],
+      previewLabel: "Mode of Transport",
+      required: true,
+    },
+    {
+      id: "boarderName",
+      question: "Which border did you use to enter?",
+      type: "text",
+      placeholder: "e.g., Gatuna, Rusumo, Cyanika, etc.",
+      previewLabel: "Border Name",
+      required: true,
+    },
+    {
+      id: "roadArrivalDate",
+      question: "Arrival date (Road Transport)",
+      type: "date",
+      previewLabel: "Arrival Date (Road)",
+      required: true,
+    },
+    {
+      id: "roadDepartureDate",
+      question: "Departure date (Road Transport)",
+      type: "date",
+      previewLabel: "Departure Date (Road)",
+      required: true,
+    },
     {
       id: "arrivalDateTime",
-      question: "What is your arrival date and time?",
+      question: "Arrival date and time",
       type: "datetime-local",
       previewLabel: "Arrival Date & Time",
       required: true,
     },
     {
       id: "departureDateTime",
-      question: "What is your departure date and time?",
+      question: "Departure date and time",
       type: "datetime-local",
       previewLabel: "Departure Date & Time",
       required: true,
@@ -430,7 +460,7 @@ const delegateFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   phoneNumber: z
     .string()
-    .regex(/^\+[0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
+    .regex(/^[+][0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
   gender: z.string().min(1, "Please select your gender"),
   country: z.string().min(1, "Please select your nationality"),
   state: z.string().min(1, "Please select your partner state"),
@@ -445,7 +475,11 @@ const delegateFormSchema = z.object({
   }),
   position: z.string().min(1, "Please enter your position"),
   organization: z.string().min(1, "Please enter your organization"),
-  // Travel info fields - optional since they're only required for non-Rwanda delegates
+  // Travel info fields
+  modeOfTransport: z.string().optional(),
+  boarderName: z.string().optional(),
+  roadArrivalDate: z.string().optional(),
+  roadDepartureDate: z.string().optional(),
   arrivalDateTime: z.string().optional(),
   departureDateTime: z.string().optional(),
   airline: z.string().optional(),
@@ -459,11 +493,26 @@ type DelegateFormValues = z.infer<typeof delegateFormSchema>
 export default function DelegateForm() {
   // Add this function at the top of the component, before any variable declarations
   const shouldShowQuestion = (question: Question): boolean => {
-    // Skip travel questions if partner state is Rwanda
-    if (["arrivalDateTime", "departureDateTime", "airline"].includes(question.id)) {
-      return formValues.state !== "Rwanda"
+    // Travel questions only for non-Rwanda partner state
+    if (["modeOfTransport", "boarderName", "roadArrivalDate", "roadDepartureDate", "arrivalDateTime", "departureDateTime", "airline"].includes(question.id)) {
+      if (formValues.state === "Rwanda") return false;
+      // Mode of transport always for non-Rwanda
+      if (question.id === "modeOfTransport") return true;
+      // Road Transport: boarderName, arrival/departure datetime gusa
+      if (formValues.modeOfTransport === "Road Transport") {
+        if (["boarderName", "arrivalDateTime", "departureDateTime"].includes(question.id)) return true;
+        // ntukwerekane roadArrivalDate, roadDepartureDate, airline
+        return false;
+      }
+      // Airline Transport: arrival/departure date & time, airline
+      if (formValues.modeOfTransport === "Airline Transport") {
+        if (["arrivalDateTime", "departureDateTime", "airline"].includes(question.id)) return true;
+        // boarderName, roadArrivalDate, roadDepartureDate ntibigaragare kuri airline
+        return false;
+      }
+      return false;
     }
-    return true
+    return true;
   }
 
   // State for tracking current step and question
@@ -546,6 +595,10 @@ export default function DelegateForm() {
       delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP" | "CSO",
       position: "",
       organization: "",
+      modeOfTransport: "",
+      boarderName: "",
+      roadArrivalDate: "",
+      roadDepartureDate: "",
       arrivalDateTime: "",
       departureDateTime: "",
       airline: "",
@@ -736,11 +789,43 @@ export default function DelegateForm() {
         setValidationError("Both first and last name are required")
         return false
       }
-      // Set the fullNames field for form validation
       setValue("firstName", formData.firstName || "")
       setValue("lastName", formData.lastName || "")
       setValue("fullNames", `${formData.firstName || ""} ${formData.lastName || ""}`)
       return true
+    }
+
+    // Special validation for travel info fields
+    if (["modeOfTransport", "boarderName", "roadArrivalDate", "roadDepartureDate", "arrivalDateTime", "departureDateTime", "airline"].includes(currentQuestion.id)) {
+      if (formValues.state === "Rwanda") return true
+      if (currentQuestion.id === "modeOfTransport" && !formValues.modeOfTransport) {
+        setValidationError("Please select mode of transport")
+        return false
+      }
+      if (formValues.modeOfTransport === "Road Transport") {
+        if (currentQuestion.id === "boarderName" && !formValues.boarderName) {
+          setValidationError("Please enter border name")
+          return false
+        }
+        if ((currentQuestion.id === "roadArrivalDate" || currentQuestion.id === "roadDepartureDate") && !formValues[currentQuestion.id]) {
+          setValidationError("Please select a date")
+          return false
+        }
+        if ((currentQuestion.id === "arrivalDateTime" || currentQuestion.id === "departureDateTime") && !formValues[currentQuestion.id]) {
+          setValidationError("Please select a date and time")
+          return false
+        }
+      }
+      if (formValues.modeOfTransport === "Airline Transport") {
+        if ((currentQuestion.id === "arrivalDateTime" || currentQuestion.id === "departureDateTime") && !formValues[currentQuestion.id]) {
+          setValidationError("Please select a date and time")
+          return false
+        }
+        if (currentQuestion.id === "airline" && !formValues.airline) {
+          setValidationError("Please enter airline name")
+          return false
+        }
+      }
     }
     // Special validation for sessions
     if (currentQuestion.id === "sessions" && !formValues.sessions) {
@@ -748,59 +833,21 @@ export default function DelegateForm() {
       return false
     }
 
-    // Special validation for travel info fields
-    if (["arrivalDateTime", "departureDateTime", "airline"].includes(currentQuestion.id)) {
-      // Only validate travel questions if not from Rwanda
-      if (formValues.state === "Rwanda") {
-        return true // Skip validation for Rwanda
-      }
-    }
-
-    if (currentQuestion.id === "arrivalDateTime" || currentQuestion.id === "departureDateTime") {
-      const value = formValues[currentQuestion.id as keyof DelegateFormValues]
-      if (!value || value === "") {
-        setValidationError("Please select a date and time")
-        return false
-      }
-    }
-
-    if (currentQuestion.id === "airline") {
-      const value = formValues.airline
-      if (!value || value.trim() === "") {
-        setValidationError("Please enter the airline name")
-        return false
-      }
-    }
-
-    const value = formValues[currentQuestion.id as keyof DelegateFormValues]
-    // Check if required
-    if (currentQuestion.required && (!value || value === "") && currentQuestion.id !== "sessions") {
-      setValidationError("This field is required")
-      return false
-    }
-    // Check custom validation
-    if (value && currentQuestion.validation) {
-      const error = currentQuestion.validation(value)
-      if (error) {
-        setValidationError(error)
-        return false
-      }
-    }
     // Special validation for dietary and special needs
-    if (currentQuestion.id === "dietary" && value === "Yes" && additionalInfo.dietary.length === 0) {
+    if (currentQuestion.id === "dietary" && formValues.dietary === "Yes" && additionalInfo.dietary.length === 0) {
       setValidationError("Please add at least one dietary restriction")
       return false
     }
-    if (currentQuestion.id === "special-needs" && value === "Yes" && additionalInfo["special-needs"].length === 0) {
+    if (currentQuestion.id === "special-needs" && formValues["special-needs"] === "Yes" && additionalInfo["special-needs"].length === 0) {
       setValidationError("Please add at least one special need")
       return false
     }
 
     // Special validation for accommodation details
     if (currentQuestion.id === "accommodation") {
-      if ((value === "Booked" || value === "Other") && !accommodationDetails.trim()) {
+      if ((formValues.accommodation === "Booked" || formValues.accommodation === "Other") && !accommodationDetails.trim()) {
         setValidationError(
-          `Please specify your ${value === "Booked" ? "hotel/accommodation place" : "accommodation arrangement"}`,
+          `Please specify your ${formValues.accommodation === "Booked" ? "hotel/accommodation place" : "accommodation arrangement"}`,
         )
         return false
       }
@@ -882,7 +929,6 @@ export default function DelegateForm() {
   // Form submission handler - Updated to include travel info
   const handleFormSubmit = async () => {
     setIsSubmitting(true)
-
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("firstName", formValues.firstName || "");
@@ -893,7 +939,7 @@ export default function DelegateForm() {
       formDataToSend.append("role", "DELEGATE");
       formDataToSend.append(
         "national_id",
-        formValues.idType === "National ID Number" ? formValues.idNumber || "" : ""
+        formValues.idType === "National ID Number" ? (formValues.idNumber || "") : ""
       );
       formDataToSend.append("phonenumber", formValues.phoneNumber || "");
       formDataToSend.append("delegate_type", formValues.delegateType || "");
@@ -926,13 +972,37 @@ export default function DelegateForm() {
       formDataToSend.append("accommodation_details", accommodationDetails || "");
       // Travel info
       if (formValues.state === "Rwanda") {
-        formDataToSend.append("arrival_datetime", null as any);
-        formDataToSend.append("departure_datetime", null as any);
-        formDataToSend.append("airline", null as any);
-      } else {
-        formDataToSend.append("arrival_datetime", formValues.arrivalDateTime || "");
-        formDataToSend.append("departure_datetime", formValues.departureDateTime || "");
+        formDataToSend.append("mode_of_transport", "");
+        formDataToSend.append("boarder_name", "");
+        formDataToSend.append("road_arrival_datetime", "");
+        formDataToSend.append("road_departure_datetime", "");
+        formDataToSend.append("arrival_datetime", "");
+        formDataToSend.append("departure_datetime", "");
+        formDataToSend.append("airline", "");
+      } else if (formValues.modeOfTransport === "Airline Transport") {
+        formDataToSend.append("mode_of_transport", "AIRLINE");
+        formDataToSend.append("boarder_name", "");
+        formDataToSend.append("road_arrival_datetime", "");
+        formDataToSend.append("road_departure_datetime", "");
+        formDataToSend.append("arrival_datetime", formValues.arrivalDateTime ? new Date(formValues.arrivalDateTime).toISOString() : "");
+        formDataToSend.append("departure_datetime", formValues.departureDateTime ? new Date(formValues.departureDateTime).toISOString() : "");
         formDataToSend.append("airline", formValues.airline || "");
+      } else if (formValues.modeOfTransport === "Road Transport") {
+        formDataToSend.append("mode_of_transport", "ROAD");
+        formDataToSend.append("boarder_name", formValues.boarderName || "");
+        formDataToSend.append("road_arrival_datetime", formValues.arrivalDateTime || "");
+        formDataToSend.append("road_departure_datetime", formValues.departureDateTime || "");
+        formDataToSend.append("arrival_datetime", "");
+        formDataToSend.append("departure_datetime", "");
+        formDataToSend.append("airline", "");
+      } else {
+        formDataToSend.append("mode_of_transport", "");
+        formDataToSend.append("boarder_name", "");
+        formDataToSend.append("road_arrival_datetime", "");
+        formDataToSend.append("road_departure_datetime", "");
+        formDataToSend.append("arrival_datetime", "");
+        formDataToSend.append("departure_datetime", "");
+        formDataToSend.append("airline", "");
       }
       // Event/session info
       formDataToSend.append("selected_event", "Global Skill Connect");
@@ -1475,6 +1545,25 @@ export default function DelegateForm() {
             )}
           </div>
         )
+      case "mode-of-transport":
+        return (
+          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
+            <RadioGroup
+              value={formValues.modeOfTransport || ""}
+              onValueChange={(value) => handleRadioChange("modeOfTransport", value)}
+              className="flex space-x-8 justify-center mt-4"
+            >
+              {["Airline Transport", "Road Transport"].map((option) => (
+                <div key={option} className="flex items-center space-x-3">
+                  <RadioGroupItem value={option} id={option.toLowerCase().replace(/\s/g, "-")} className="w-5 h-5" />
+                  <Label htmlFor={option.toLowerCase().replace(/\s/g, "-")} className="text-lg">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
       default:
         return null
     }
