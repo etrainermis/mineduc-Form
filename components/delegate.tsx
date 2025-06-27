@@ -1097,7 +1097,13 @@ export default function DelegateForm() {
       );
       // Travel info
       if (formValues.state === "Rwanda") {
-
+        formDataToSend.append("mode_of_transport", "ROAD");
+        formDataToSend.append("boarder_name", "N/A");
+        formDataToSend.append("road_arrival_datetime", "N/A");
+        formDataToSend.append("road_departure_datetime", "N/A");
+        formDataToSend.append("arrival_datetime", "");
+        formDataToSend.append("departure_datetime", "");
+        formDataToSend.append("airline", "");
       } else if (formValues.modeOfTransport === "Airline Transport") {
         formDataToSend.append("mode_of_transport", "AIRLINE");
         formDataToSend.append("boarder_name", "");
