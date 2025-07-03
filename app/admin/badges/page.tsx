@@ -654,45 +654,97 @@ export default function BadgesPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex-none mt-6 flex items-center justify-center gap-2">
+                  <div className="flex-none mt-6 flex items-center justify-center gap-2 flex-wrap">
+                    <span className="mr-2 text-gray-600 text-sm">Page {currentPage} of {totalPages}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                      className="h-8 w-12"
+                    >
+                      First
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="h-8 w-8 transition-colors duration-200"
-                      style={{ "--hover-bg": "#026FB4", "--hover-text": "#ffffff" } as React.CSSProperties}
+                      className="h-8 w-8"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className="h-8 w-8 transition-colors duration-200"
-                        style={
-                          currentPage === page
-                            ? { backgroundColor: "#026FB4", color: "#ffffff" }
-                            : ({ "--hover-bg": "#026FB4", "--hover-text": "#ffffff" } as React.CSSProperties)
+                    {/* Page numbers with ellipsis */}
+                    {(() => {
+                      const pageButtons = []
+                      const maxPagesToShow = 5
+                      let startPage = Math.max(1, currentPage - 2)
+                      let endPage = Math.min(totalPages, currentPage + 2)
+                      if (currentPage <= 3) {
+                        endPage = Math.min(totalPages, maxPagesToShow)
+                      } else if (currentPage >= totalPages - 2) {
+                        startPage = Math.max(1, totalPages - maxPagesToShow + 1)
+                      }
+                      // Always show first page
+                      if (startPage > 1) {
+                        pageButtons.push(
+                          <Button key={1} variant={currentPage === 1 ? "default" : "outline"} size="sm" onClick={() => handlePageChange(1)} className="h-8 w-8">1</Button>
+                        )
+                        if (startPage > 2) {
+                          pageButtons.push(<span key="start-ellipsis" className="px-1">...</span>)
                         }
-                      >
-                        {page}
-                      </Button>
-                    ))}
-
+                      }
+                      for (let page = startPage; page <= endPage; page++) {
+                        if (page === 1 || page === totalPages) continue // already handled
+                        pageButtons.push(
+                          <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" onClick={() => handlePageChange(page)} className="h-8 w-8">{page}</Button>
+                        )
+                      }
+                      // Always show last page
+                      if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                          pageButtons.push(<span key="end-ellipsis" className="px-1">...</span>)
+                        }
+                        pageButtons.push(
+                          <Button key={totalPages} variant={currentPage === totalPages ? "default" : "outline"} size="sm" onClick={() => handlePageChange(totalPages)} className="h-8 w-8">{totalPages}</Button>
+                        )
+                      }
+                      return pageButtons
+                    })()}
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="h-8 w-8 transition-colors duration-200"
-                      style={{ "--hover-bg": "#026FB4", "--hover-text": "#ffffff" } as React.CSSProperties}
+                      className="h-8 w-8"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-12"
+                    >
+                      Last
+                    </Button>
+                    {/* Go to page input */}
+                    <span className="ml-4 text-sm">Go to:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={totalPages}
+                      defaultValue={currentPage}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          const val = Number((e.target as HTMLInputElement).value)
+                          if (val >= 1 && val <= totalPages) handlePageChange(val)
+                        }
+                      }}
+                      className="ml-2 w-16 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{ width: 60 }}
+                    />
                   </div>
                 )}
               </>
