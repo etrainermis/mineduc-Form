@@ -14,6 +14,7 @@ import JSZip from "jszip"
 import { getToken } from "@/utils/token"
 import { toast } from "sonner"
 import { BACKEND_URL } from "@/lib/config"
+import { toPng } from "html-to-image"
 
 interface Delegate {
   id: string
@@ -189,6 +190,76 @@ const PrintPreview = ({ users }: { users: Delegate[] }) => {
   )
 }
 
+// Reusable BadgePreview component (front & back)
+function BadgePreview({ delegate, registrationId }: { delegate: Delegate, registrationId: string }) {
+  function generateRegistrationId(delegateId: string) {
+    let hash = 0;
+    for (let i = 0; i < delegateId.length; i++) {
+      hash = delegateId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const randomNumber = Math.abs(hash % 500) + 1;
+    return `RFF${String(randomNumber).padStart(3, "0")}`;
+  }
+  return (
+    <div className="grid gap-6 md:grid-cols-2 max-w-[900px] mx-auto">
+      {/* Front */}
+      <div
+        className="badge-front relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
+        style={{ borderLeft: '6px solid #1565C0', borderRight: '6px solid #1565C0' }}
+      >
+        <div style={{position:'absolute', left:0, top:0, width:'100%', height:'6px', borderTopLeftRadius:'16px', borderTopRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+        <div style={{position:'absolute', left:0, bottom:0, width:'100%', height:'6px', borderBottomLeftRadius:'16px', borderBottomRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+        <div style={{position:'absolute', left:10, top:10, zIndex:3}}>
+          <Image src="/eac.jpeg" alt="EAC Logo" width={38} height={38} style={{objectFit:'contain', borderRadius:'8px'}} />
+        </div>
+        <div style={{position:'absolute', right:10, top:10, zIndex:3}}>
+          <Image src="/repub.jpeg" alt="Rwanda Logo" width={38} height={38} style={{objectFit:'contain', borderRadius:'8px'}} />
+        </div>
+        <div className="mt-2 mb-4 flex justify-center">
+          <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-[#43A047] bg-white shadow">
+            <Image
+              src={delegate.profile_picture_url || "/man.svg"}
+              alt={`${delegate.firstName} ${delegate.lastName}`}
+              width={128}
+              height={128}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        </div>
+        <div className="text-center space-y-2 mt-2">
+          <h3 className="text-2xl font-bold text-[#222] drop-shadow-none">
+            {delegate.firstName} {delegate.lastName}
+          </h3>
+          <p className="text-lg font-semibold text-[#1B5E20]">
+            {delegate.organization}
+          </p>
+          <p className="text-lg  text-[#1565C0] font-medium">
+            {delegate.country}
+          </p>
+        </div>
+      </div>
+      {/* Back */}
+      <div
+        className="badge-back relative h-[500px] w-[380px] overflow-hidden rounded-2xl bg-white p-6 shadow-lg mx-auto flex flex-col justify-center items-center"
+        style={{ borderLeft: '6px solid #1565C0', borderRight: '6px solid #1565C0' }}
+      >
+        <div style={{position:'absolute', left:0, top:0, width:'100%', height:'6px', borderTopLeftRadius:'16px', borderTopRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+        <div style={{position:'absolute', left:0, bottom:0, width:'100%', height:'6px', borderBottomLeftRadius:'16px', borderBottomRightRadius:'16px', background: 'linear-gradient(90deg, #1565C0 0%, #43A047 25%, #F9A825 50%, #000 75%, #fff 100%)', zIndex:2}}></div>
+        <div className="relative flex flex-col w-full items-center mt-8 mb-6">
+          <div className="mb-4 rounded-xl bg-gradient-to-r from-[#1565C0]/10 via-[#1565C0]/20 to-[#43A047]/10 p-3 text-center shadow-sm w-3/4 mx-auto">
+            <p className="text-base font-semibold text-[#1565C0]">Delegate ID</p>
+            <p className="mt-0.5 font-mono text-lg font-bold tracking-wider text-[#1565C0]">{generateRegistrationId(delegate.id)}</p>
+          </div>
+        </div>
+        <div className="flex flex-col justify-center items-center h-full w-full">
+          <h2 className="text-lg font-bold text-[#1565C0] text-center mb-2">4th World Kiswahili Day Celebrations<br/>Kigali - Rwanda</h2>
+          <h3 className="text-base font-semibold text-[#43A047] text-center mt-2">Maadhimisho ya Nne ya Siku ya Kiswahili Duniani<br/>Kigali- Rwanda</h3>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function BadgesPage() {
   const [delegates, setDelegates] = useState<Delegate[]>([])
   const [loading, setLoading] = useState(true)
@@ -293,159 +364,41 @@ export default function BadgesPage() {
     setIsGenerating(true)
     try {
       const zip = new JSZip()
-
       // Filter users for selected workshop
       const workshopUsers =
         selectedWorkshop === "all" ? delegates : delegates.filter((user) => user.selected_event === selectedWorkshop)
-
       for (const user of workshopUsers) {
-        // Create canvas for front
-        const frontCanvas = document.createElement("canvas")
-        frontCanvas.width = 1749 // 148mm at 300dpi
-        frontCanvas.height = 2481 // 210mm at 300dpi
-        const frontCtx = frontCanvas.getContext("2d")!
-
-        // Draw front badge
-        // Fill entire canvas with gradient background
-        const frontGradient = frontCtx.createLinearGradient(0, 0, 0, frontCanvas.height)
-        frontGradient.addColorStop(0, "#026FB4")
-        frontGradient.addColorStop(1, "#003366")
-        frontCtx.fillStyle = frontGradient
-        frontCtx.fillRect(0, 0, frontCanvas.width, frontCanvas.height)
-
-        // Draw white card background with rounded corners
-        const padding = frontCanvas.width * 0.06 // 6% padding
-        frontCtx.fillStyle = "#ffffff"
-        roundRect(
-          frontCtx,
-          padding,
-          padding,
-          frontCanvas.width - padding * 2,
-          frontCanvas.height - padding * 2,
-          60, // Larger radius for more rounded corners
-        )
-
-        // Load and draw user image
-        const img = document.createElement("img")
-        await new Promise<void>((resolve, reject) => {
-          const handleLoad = () => {
-            img.removeEventListener("load", handleLoad)
-            img.removeEventListener("error", handleError)
-            resolve()
-          }
-
-          const handleError = () => {
-            img.removeEventListener("load", handleLoad)
-            img.removeEventListener("error", handleError)
-            reject(new Error("Failed to load image"))
-          }
-
-          img.addEventListener("load", handleLoad)
-          img.addEventListener("error", handleError)
-          img.crossOrigin = "anonymous"
-          img.src = user.profile_picture_url || "/man.svg"
+        // 1. Create a container for the badge preview
+        const container = document.createElement("div")
+        container.style.position = "fixed"
+        container.style.left = "-9999px"
+        container.style.top = "0"
+        document.body.appendChild(container)
+        // 2. Render BadgePreview into the container
+        const registrationId = "" // or use hash logic if needed
+        // @ts-ignore
+        import("react-dom/client").then(ReactDOMClient => {
+          const root = ReactDOMClient.createRoot(container)
+          root.render(<BadgePreview delegate={user} registrationId={registrationId} />)
         })
-
-        // Draw circular profile image
-        const imageSize = frontCanvas.width * 0.22 // Slightly smaller image
-        const imageX = (frontCanvas.width - imageSize) / 2
-        const imageY = padding + frontCanvas.height * 0.12 // Position higher up
-
-        // Draw blue circle border first
-        frontCtx.strokeStyle = "#026FB4"
-        frontCtx.lineWidth = 16 // Thicker border
-        frontCtx.beginPath()
-        frontCtx.arc(imageX + imageSize / 2, imageY + imageSize / 2, imageSize / 2 + 8, 0, Math.PI * 2)
-        frontCtx.stroke()
-
-        // Then draw the clipped image
-        frontCtx.save()
-        frontCtx.beginPath()
-        frontCtx.arc(imageX + imageSize / 2, imageY + imageSize / 2, imageSize / 2, 0, Math.PI * 2)
-        frontCtx.clip()
-        frontCtx.drawImage(img, imageX, imageY, imageSize, imageSize)
-        frontCtx.restore()
-
-        // Text settings
-        frontCtx.textAlign = "center"
-
-        // Draw name - larger and bolder
-        frontCtx.font = "bold 140px Inter"
-        frontCtx.fillStyle = "#026FB4"
-        frontCtx.fillText(`${user.firstName} ${user.lastName}`, frontCanvas.width / 2, imageY + imageSize + 180)
-
-        // Draw title - medium size
-        frontCtx.font = "90px Inter"
-        frontCtx.fillStyle = "#4B5563"
-        frontCtx.fillText(user.position, frontCanvas.width / 2, imageY + imageSize + 320)
-
-        // Draw company - slightly smaller
-        frontCtx.font = "80px Inter"
-        frontCtx.fillText(user.organization, frontCanvas.width / 2, imageY + imageSize + 440)
-
-        // Draw workshop badge - wider and more rounded
-        const badgeWidth = frontCanvas.width * 0.75
-        const badgeHeight = 140
-        const badgeX = (frontCanvas.width - badgeWidth) / 2
-        const badgeY = frontCanvas.height - padding - 240
-
-        frontCtx.fillStyle = "#026FB4"
-        roundRect(frontCtx, badgeX, badgeY, badgeWidth, badgeHeight, 70)
-
-        frontCtx.font = "80px Inter"
-        frontCtx.fillStyle = "#ffffff"
-        frontCtx.fillText(user.selected_event, frontCanvas.width / 2, badgeY + badgeHeight * 0.68)
-
-        // Create canvas for back
-        const backCanvas = document.createElement("canvas")
-        backCanvas.width = 1749
-        backCanvas.height = 2481
-        const backCtx = backCanvas.getContext("2d")!
-
-        // Draw back badge
-        // Fill entire canvas with gradient background
-        const backGradient = backCtx.createLinearGradient(0, 0, 0, backCanvas.height)
-        backGradient.addColorStop(0, "#026FB4")
-        backGradient.addColorStop(1, "#003366")
-        backCtx.fillStyle = backGradient
-        backCtx.fillRect(0, 0, backCanvas.width, backCanvas.height)
-
-        // Draw white card background with rounded corners
-        backCtx.fillStyle = "#ffffff"
-        roundRect(backCtx, padding, padding, backCanvas.width - padding * 2, backCanvas.height - padding * 2, 60)
-
-        // Draw "Scan QR Code" text
-        backCtx.font = "bold 120px Inter"
-        backCtx.fillStyle = "#026FB4"
-        backCtx.textAlign = "center"
-        backCtx.fillText("Scan QR Code", backCanvas.width / 2, padding + 240)
-
-        // Draw QR code placeholder - larger and with rounded corners
-        const qrSize = backCanvas.width * 0.35
-        const qrX = (backCanvas.width - qrSize) / 2
-        const qrY = (backCanvas.height - qrSize) / 2
-
-        backCtx.fillStyle = "#026FB4"
-        roundRect(backCtx, qrX, qrY, qrSize, qrSize, 20)
-
-        // Draw "For More Information" text
-        backCtx.font = "80px Inter"
-        backCtx.fillStyle = "#4B5563"
-        backCtx.fillText("For More Information", backCanvas.width / 2, qrY + qrSize + 180)
-
-        // Convert to blobs and add to zip
-        const frontBlob = await new Promise<Blob>((resolve) => {
-          frontCanvas.toBlob((blob) => resolve(blob!), "image/png", 1.0)
-        })
-
-        const backBlob = await new Promise<Blob>((resolve) => {
-          backCanvas.toBlob((blob) => resolve(blob!), "image/png", 1.0)
-        })
-
-        zip.file(`${user.firstName}_${user.lastName}_front.png`, frontBlob)
-        zip.file(`${user.firstName}_${user.lastName}_back.png`, backBlob)
+        // 3. Wait for render
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        // 4. Take screenshot of front
+        const front = container.querySelector('.badge-front') as HTMLElement
+        const back = container.querySelector('.badge-back') as HTMLElement
+        if (front) {
+          const frontDataUrl = await toPng(front, { quality: 0.95, pixelRatio: 2, backgroundColor: "#fff" })
+          const frontBlob = await (await fetch(frontDataUrl)).blob()
+          zip.file(`${user.firstName}_${user.lastName}_front.png`, frontBlob)
+        }
+        if (back) {
+          const backDataUrl = await toPng(back, { quality: 0.95, pixelRatio: 2, backgroundColor: "#fff" })
+          const backBlob = await (await fetch(backDataUrl)).blob()
+          zip.file(`${user.firstName}_${user.lastName}_back.png`, backBlob)
+        }
+        // 5. Clean up
+        document.body.removeChild(container)
       }
-
       // Generate and download zip
       const content = await zip.generateAsync({ type: "blob" })
       const url = URL.createObjectURL(content)

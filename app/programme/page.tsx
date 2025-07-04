@@ -10,7 +10,7 @@ export default function Programme() {
         <h1 className="text-4xl font-bold text-center my-12">
           4TH EAC <span className="text-[#00A9DE]">WORLD KISWAHILI LANGUAGE DAY</span> CELEBRATIONS
         </h1>
-        <p className="text-center text-lg text-gray-600 mb-8">Serena Hotel • July 5-6, 2025</p>
+        <p className="text-center text-lg text-gray-600 mb-8">Serena Hotel • July 6-7, 2025</p>
 
         {/* Main Program Overview Grid */}
         <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
@@ -46,7 +46,7 @@ export default function Programme() {
               <h3 className="text-white text-2xl font-bold text-center mb-2">DAY TWO</h3>
               <h4 className="text-white text-xl font-semibold text-center mb-2">July 6th, 2025</h4>
               <h5 className="text-white text-lg font-medium text-center">Youth Engagement Symposium</h5>
-              <p className="text-white text-sm text-center mt-2">07:00 - 17:00</p>
+              <p className="text-white text-sm text-center mt-2">07:00 - 15:30</p>
             </div>
           </div>
 
