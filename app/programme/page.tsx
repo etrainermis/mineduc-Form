@@ -13,26 +13,8 @@ export default function Programme() {
         <p className="text-center text-lg text-gray-600 mb-8">Serena Hotel • July 6-7, 2025</p>
 
         {/* Main Program Overview Grid */}
-        <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
-          {/* Day One - Media Briefing */}
-          <div className="relative rounded-lg overflow-hidden h-80">
-            <Image
-              src="/panel.jpg"
-              alt="Media Briefing"
-              width={400}
-              height={320}
-              className="object-cover w-full h-full"
-            />
-            <div className="absolute inset-0 bg-[#8B000380]"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-              <h3 className="text-white text-2xl font-bold text-center mb-2">DAY ONE</h3>
-              <h4 className="text-white text-xl font-semibold text-center mb-2">July 5th, 2025</h4>
-              <h5 className="text-white text-lg font-medium text-center">Media Briefing</h5>
-              <p className="text-white text-sm text-center mt-2">15:00 - 16:00</p>
-            </div>
-          </div>
-
-          {/* Day Two - Youth Engagement Symposium */}
+        <div className="hidden md:grid grid-cols-2 gap-6 mb-12">
+          {/* Day One - Youth Engagement Symposium (was Day Two) */}
           <div className="relative rounded-lg overflow-hidden h-80">
             <Image
               src="/bgthree.jpg"
@@ -43,14 +25,14 @@ export default function Programme() {
             />
             <div className="absolute inset-0 bg-[#23AF57B2]"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-              <h3 className="text-white text-2xl font-bold text-center mb-2">DAY TWO</h3>
+              <h3 className="text-white text-2xl font-bold text-center mb-2">DAY ONE</h3>
               <h4 className="text-white text-xl font-semibold text-center mb-2">July 6th, 2025</h4>
               <h5 className="text-white text-lg font-medium text-center">Youth Engagement Symposium</h5>
               <p className="text-white text-sm text-center mt-2">07:00 - 15:30</p>
             </div>
           </div>
 
-          {/* Day Three - Main Celebrations */}
+          {/* Day Two - Main Celebrations (was Day Three) */}
           <div className="relative rounded-lg overflow-hidden h-80">
             <Image
               src="/intermini.jpg"
@@ -61,7 +43,7 @@ export default function Programme() {
             />
             <div className="absolute inset-0 bg-[#00A9DE80]"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-              <h3 className="text-white text-2xl font-bold text-center mb-2">DAY THREE</h3>
+              <h3 className="text-white text-2xl font-bold text-center mb-2">DAY TWO</h3>
               <h4 className="text-white text-xl font-semibold text-center mb-2">July 7th, 2025</h4>
               <h5 className="text-white text-lg font-medium text-center">Main Celebrations</h5>
               <p className="text-white text-sm text-center mt-2">09:00 - 13:00</p>
@@ -73,20 +55,6 @@ export default function Programme() {
         <div className="md:hidden space-y-4 mb-12">
           <div className="relative rounded-lg overflow-hidden h-48">
             <Image
-              src="/panel.jpg"
-              alt="Media Briefing"
-              width={400}
-              height={192}
-              className="object-cover w-full h-full"
-            />
-            <div className="absolute inset-0 bg-[#8B000380]"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <h3 className="text-white text-xl font-bold">DAY ONE - July 5th</h3>
-              <p className="text-white text-center">Media Briefing</p>
-            </div>
-          </div>
-          <div className="relative rounded-lg overflow-hidden h-48">
-            <Image
               src="/bgthree.jpg"
               alt="Youth Engagement Symposium"
               width={400}
@@ -95,7 +63,7 @@ export default function Programme() {
             />
             <div className="absolute inset-0 bg-[#23AF57B2]"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <h3 className="text-white text-xl font-bold">DAY TWO - July 6th</h3>
+              <h3 className="text-white text-xl font-bold">DAY ONE - July 6th</h3>
               <p className="text-white text-center">Youth Engagement Symposium</p>
             </div>
           </div>
@@ -109,86 +77,15 @@ export default function Programme() {
             />
             <div className="absolute inset-0 bg-[#00A9DE80]"></div>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <h3 className="text-white text-xl font-bold">DAY THREE - July 7th</h3>
+              <h3 className="text-white text-xl font-bold">DAY TWO - July 7th</h3>
               <p className="text-white text-center">Main Celebrations</p>
             </div>
           </div>
         </div>
 
-        {/* DAY ONE - JULY 5TH, 2025 */}
+        {/* DAY ONE - JULY 6TH, 2025 */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 text-[#8B0003]">DAY ONE • JULY 5TH, 2025</h2>
-          <h3 className="text-xl font-semibold text-center mb-8 text-gray-700">Media Briefing</h3>
-
-          {/* Media Briefing Section */}
-          <div className="bg-gradient-to-r from-[#8B0003] to-[#8B000380] rounded-lg p-8 mb-6">
-            <div className="max-w-6xl mx-auto">
-              <h4 className="text-white text-3xl font-bold mb-6 text-center">MEDIA BRIEFING</h4>
-              <p className="text-white text-xl text-center mb-8">15:00 - 16:00</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div className="bg-white rounded-lg p-6">
-                  <h5 className="text-[#8B0003] text-xl font-semibold mb-4">Distinguished Speakers:</h5>
-                  <ul className="space-y-3">
-                    <li className="flex items-start">
-                      <span className="inline-flex items-center justify-center bg-[#8B0003] text-white rounded-full w-6 h-6 text-sm mr-3 flex-shrink-0 mt-0.5">
-                        •
-                      </span>
-                      <span className="text-gray-800 text-base">Ministers: MINAFFET, MINEDUC, and MINUBUMWE</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="inline-flex items-center justify-center bg-[#8B0003] text-white rounded-full w-6 h-6 text-sm mr-3 flex-shrink-0 mt-0.5">
-                        •
-                      </span>
-                      <span className="text-gray-800 text-base">EAC Secretary General</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="inline-flex items-center justify-center bg-[#8B0003] text-white rounded-full w-6 h-6 text-sm mr-3 flex-shrink-0 mt-0.5">
-                        •
-                      </span>
-                      <span className="text-gray-800 text-base">Judge President EACJ</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="bg-white rounded-lg p-6">
-                  <h5 className="text-[#8B0003] text-xl font-semibold mb-4">Additional Speakers:</h5>
-                  <ul className="space-y-3 mb-4">
-                    <li className="flex items-start">
-                      <span className="inline-flex items-center justify-center bg-[#8B0003] text-white rounded-full w-6 h-6 text-sm mr-3 flex-shrink-0 mt-0.5">
-                        •
-                      </span>
-                      <span className="text-gray-800 text-base">Speaker EALA</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="inline-flex items-center justify-center bg-[#8B0003] text-white rounded-full w-6 h-6 text-sm mr-3 flex-shrink-0 mt-0.5">
-                        •
-                      </span>
-                      <span className="text-gray-800 text-base">Executive Secretary EAKC</span>
-                    </li>
-                  </ul>
-
-                  <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-                    <p className="text-gray-800 text-sm font-medium">Responsible: MINEDUC</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Day One Summary */}
-          <div className="bg-gray-50 rounded-lg p-6 text-center mb-8">
-            <h4 className="text-xl font-semibold text-gray-800 mb-2">Pre-Event Media Engagement</h4>
-            <p className="text-gray-600">
-              Setting the stage for the 4th EAC World Kiswahili Language Day celebrations with key stakeholder briefings
-              and media engagement.
-            </p>
-          </div>
-        </div>
-
-        {/* DAY TWO - JULY 6TH, 2025 */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 text-[#23AF57]">DAY TWO • JULY 6TH, 2025</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 text-[#23AF57]">DAY ONE • JULY 6TH, 2025</h2>
           <h3 className="text-xl font-semibold text-center mb-8 text-gray-700">Youth Engagement Symposium</h3>
 
           {/* Morning Sessions */}
@@ -492,9 +389,9 @@ export default function Programme() {
           </div>
         </div>
 
-        {/* DAY THREE - JULY 7TH, 2025 */}
+        {/* DAY TWO - JULY 7TH, 2025 */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 text-[#00A9DE]">DAY THREE • JULY 7TH, 2025</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 text-[#00A9DE]">DAY TWO • JULY 7TH, 2025</h2>
           <h3 className="text-xl font-semibold text-center mb-8 text-gray-700">Main Celebrations</h3>
 
           {/* Morning Arrival and Setup */}
