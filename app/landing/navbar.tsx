@@ -98,9 +98,9 @@ export default function Navbar() {
             </Button>
           </Link>
           <Link href="/delegate">
-            <Button className="bg-[#026FB4] text-white hover:bg-[#025a91] transition-colors duration-300 rounded-md px-6">
+            {/* <Button className="bg-[#026FB4] text-white hover:bg-[#025a91] transition-colors duration-300 rounded-md px-6">
               Register
-            </Button>
+            </Button> */}
           </Link>
         </div>
 

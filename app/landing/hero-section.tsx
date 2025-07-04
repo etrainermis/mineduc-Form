@@ -86,9 +86,9 @@ export default function HeroSection() {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Link href="/delegate">
-              <Button className="bg-white text-[#23AF57] hover:bg-transparent hover:text-white hover:border-white border border-transparent transition-all duration-300 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-medium rounded-md">
+              {/* <Button className="bg-white text-[#23AF57] hover:bg-transparent hover:text-white hover:border-white border border-transparent transition-all duration-300 px-6 md:px-8 py-4 md:py-6 text-base md:text-lg font-medium rounded-md">
                 Book your spot
-              </Button>
+              </Button> */}
             </Link>
           </motion.div>
         </div>

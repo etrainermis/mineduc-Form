@@ -1,66 +1,51 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ImagePlus, Plus, AlertCircle, ChevronLeft, ChevronRight, X, CheckCircle2, ArrowLeft } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast, Toaster } from "sonner"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-
-// Logo image
-import FutureSkillsLogo from "@/public/global.png"
-import Link from "next/link"
-import { BACKEND_URL } from "@/lib/config"
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ImagePlus,
+  Plus,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  CheckCircle2,
+  ArrowLeft,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast, Toaster } from "sonner";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { BACKEND_URL } from "@/lib/config";
 
 // Define question interface
 interface Question {
-  id: string
-  question: string
-  type: string
-  placeholder?: string
-  options?: string[]
-  previewLabel?: string
-  required?: boolean
-  validation?: (value: string) => string | null
-  description?: string
-}
-
-// Define workshop interface
-interface Workshop {
-  id: string
-  title: string
-  name: string
-  icon: string
-  capacity: number
-  registered: number
-  venue: string
-  schedule: string
-  // short_description: string
-}
-
-// Define round table interface
-interface RoundTable {
-  id: string
-  name: string
-  description: string
-}
-
-// Define activity interface
-interface Activity {
-  id: string
-  name: string
+  id: string;
+  question: string;
+  type: string;
+  placeholder?: string;
+  options?: string[];
+  previewLabel?: string;
+  required?: boolean;
+  validation?: (value: string) => string | null;
+  description?: string;
 }
 
 // Define countries
@@ -104,7 +89,7 @@ const COUNTRIES = [
   "Colombia",
   "Comoros",
   "Congo",
-  "Cote d’Ivoire",
+  "Cote d'Ivoire",
   "Costa Rica",
   "Croatia",
   "Cuba",
@@ -261,76 +246,33 @@ const COUNTRIES = [
   "Yemen",
   "Zambia",
   "Zimbabwe",
-]
+];
+// Define EAC Partner States
+const EAC_COUNTRIES = [
+  "Burundi",
+  "Democratic Republic of Congo",
+  "Kenya",
+  "Rwanda",
+  "Somalia",
+  "South Sudan",
+  "Uganda",
+  "Tanzania",
+];
 
-// Define the main steps
+// Update the getSteps function to remove dynamic step generation
 const STEPS = [
-  { id: "personal-info", label: "Personal Info", count: 8 },
+  { id: "personal-info", label: "Personal Info", count: 13 }, // Updated count to include travel questions
   { id: "professional-info", label: "Professional Info", count: 3 },
   { id: "event-based-info", label: "Event-Based Info", count: 1 },
-]
+];
 
 // Email validation regex
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Phone validation regex (simple version)
-const phoneRegex = /^\+[0-9\s-]{9,}$/
+const phoneRegex = /^\+[0-9\s-]{9,}$/;
 
-// Define workshops (will be overridden by API data)
-// const WORKSHOPS: Workshop[] = []
-// console.log(WORKSHOPS)
-
-// Define round tables
-const ROUND_TABLES: RoundTable[] = [
-  {
-    id: "rt1",
-    name: "RT1: Governance",
-    description: "Planning, management, financing, quality assurance of TVET",
-  },
-  {
-    id: "rt2",
-    name: "RT2: Content",
-    description: "Occupational standards, TVET programs and curricula development/revision",
-  },
-  {
-    id: "rt3",
-    name: "RT3: Training",
-    description: "Training, CPD and retention of TVET teacher and trainers",
-  },
-  {
-    id: "rt4",
-    name: "RT4: Assessment",
-    description: "Competence-based assessment, skills/trade tests, RPL",
-  },
-  {
-    id: "rt5",
-    name: "RT5: Dual Training",
-    description: "Dual training for full qualification or short courses",
-  },
-  {
-    id: "rt6",
-    name: "RT6: Industry Exposure",
-    description: "Industry-based training and industrial attachments",
-  },
-  {
-    id: "rt7",
-    name: "RT7: Entrepreneurship",
-    description: "Entrepreneurship, business development and soft skills",
-  },
-  {
-    id: "rt8",
-    name: "RT8: Labour Market Transition",
-    description: "Employability of TVET graduates, entrepreneurship and soft skills",
-  },
-]
-
-// Update activities title
-const ACTIVITIES: Activity[] = [
-  { id: "marone", name: "Network and Knowledge Exchange 2 - Marketplace 1" },
-  { id: "martwo", name: "Network and Knowledge Exchange 2 - Marketplace 2" },
-]
-
-// Update the QUESTIONS object - replace NID/Passport with gender dropdown
+// Update the QUESTIONS object - Add travel info questions
 const QUESTIONS: Record<string, Question[]> = {
   "personal-info": [
     {
@@ -341,9 +283,9 @@ const QUESTIONS: Record<string, Question[]> = {
       required: true,
       validation: (value) => {
         if (!value) {
-          return "Both first and last name are required"
+          return "Both first and last name are required";
         }
-        return null
+        return null;
       },
     },
     {
@@ -353,7 +295,8 @@ const QUESTIONS: Record<string, Question[]> = {
       placeholder: "ngabo@gmail.com",
       previewLabel: "Email",
       required: true,
-      validation: (value) => (!emailRegex.test(value) ? "Please enter a valid email address" : null),
+      validation: (value) =>
+        !emailRegex.test(value) ? "Please enter a valid email address" : null,
     },
     {
       id: "phoneNumber",
@@ -363,7 +306,9 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Tel N°",
       required: true,
       validation: (value) =>
-        !phoneRegex.test(value) ? "Please enter a valid phone number(Format: +250 798 123 432)" : null,
+        !phoneRegex.test(value)
+          ? "Please enter a valid phone number(Format: +250 798 123 432)"
+          : null,
     },
     {
       id: "gender",
@@ -378,6 +323,66 @@ const QUESTIONS: Record<string, Question[]> = {
       question: "What is your nationality ?",
       type: "country",
       previewLabel: "Nationality",
+      required: true,
+    },
+    {
+      id: "state",
+      question: "What is your partner state?",
+      type: "state",
+      previewLabel: "Partner state",
+      required: true,
+    },
+    // Travel logic fields (conditional)
+    {
+      id: "modeOfTransport",
+      question: "Mode of Transport",
+      type: "mode-of-transport",
+      options: ["Airline Transport", "Road Transport"],
+      previewLabel: "Mode of Transport",
+      required: true,
+    },
+    {
+      id: "boarderName",
+      question: "Which border did you use to enter?",
+      type: "text",
+      placeholder: "e.g., Gatuna, Rusumo, Cyanika, etc.",
+      previewLabel: "Border Name",
+      required: true,
+    },
+    {
+      id: "roadArrivalDate",
+      question: "Arrival date (Road Transport)",
+      type: "datetime-local",
+      previewLabel: "Arrival Date (Road)",
+      required: true,
+    },
+    {
+      id: "roadDepartureDate",
+      question: "Departure date (Road Transport)",
+      type: "datetime-local",
+      previewLabel: "Departure Date (Road)",
+      required: true,
+    },
+    {
+      id: "arrivalDateTime",
+      question: "Arrival date and time",
+      type: "datetime-local",
+      previewLabel: "Arrival Date & Time",
+      required: true,
+    },
+    {
+      id: "departureDateTime",
+      question: "Departure date and time",
+      type: "datetime-local",
+      previewLabel: "Departure Date & Time",
+      required: true,
+    },
+    {
+      id: "airline",
+      question: "Which airline are you traveling with?",
+      type: "text",
+      placeholder: "e.g., RwandAir, Ethiopian Airlines, etc.",
+      previewLabel: "Airline",
       required: true,
     },
     {
@@ -403,6 +408,22 @@ const QUESTIONS: Record<string, Question[]> = {
       previewLabel: "Special Needs",
       required: true,
     },
+    {
+      id: "accommodation",
+      question: "What is your accommodation status?",
+      type: "radio",
+      options: ["Booked", "Not booked", "Other"],
+      previewLabel: "Accommodation",
+      required: true,
+    },
+    {
+      id: "idType",
+      question: "ID Type",
+      type: "radio",
+      options: ["National ID Number", "Passport Number"],
+      previewLabel: "ID Type",
+      required: true,
+    },
   ],
   "professional-info": [
     {
@@ -410,11 +431,12 @@ const QUESTIONS: Record<string, Question[]> = {
       question: "What type of delegate are you?",
       type: "select",
       options: [
-        "Public Sector Representative(GOV)",
-        "TVET Providers Representative(SCH/PLT)",
-        "Donor and Partner Representative(DP)",
-        "Private Sector Representative(ENT)",
-        "TVET Expert Representative(EXP)",
+        "Public Sector Representative-GOV(EAC Delegates,Embassies)",
+        "Education Sector Representative-SCH/PLT(Education Institutions)",
+        "Development Partner Representative-DP(Multilateral organisations,Donors)",
+        "Private Sector Representative-ENT(Private Institutions,Media houses)",
+        "Expert/Professional Representative-EXP(Independent Experts,Consultants,Advisors)",
+        "Civil Society Representative-CSO(Associations,Youth Forums)",
       ],
       previewLabel: "Delegate Type",
       required: true,
@@ -436,21 +458,19 @@ const QUESTIONS: Record<string, Question[]> = {
   ],
   "event-based-info": [
     {
-      id: "workshops",
-      question: "Select workshops you want to attend",
-      type: "workshops",
-      previewLabel: "Workshops",
+      id: "sessions",
+      question: "Select sessions you want to attend",
+      type: "sessions",
+      previewLabel: "Sessions",
       required: true,
-      // description: "Global Skills Event",
     },
-    // Removed roundTables and activities
   ],
-}
+};
 
 // Add a summary step
-const SUMMARY_STEP = { id: "summary", label: "Review & Submit", count: 1 }
+const SUMMARY_STEP = { id: "summary", label: "Review & Submit", count: 1 };
 
-// Define Zod schema for form validation with better error messages
+// Define Zod schema for form validation with better error messages - Updated to include travel fields
 const delegateFormSchema = z.object({
   fullNames: z.string().min(3, "Full name must be at least 3 characters"),
   firstName: z.string().min(1, "First name is required"),
@@ -458,71 +478,151 @@ const delegateFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   phoneNumber: z
     .string()
-    .regex(/^\+[0-9\s-]{9,}$/, "Phone number must start with '+' and be at least 10 characters long"),
+    .regex(
+      /^[+][0-9\s-]{9,}$/,
+      "Phone number must start with '+' and be at least 10 characters long"
+    ),
   gender: z.string().min(1, "Please select your gender"),
   country: z.string().min(1, "Please select your nationality"),
+  state: z.string().min(1, "Please select your partner state"),
   photo: z.any().optional(),
-  dietary: z.string().min(1, "Please indicate if you have dietary restrictions"),
-  "special-needs": z.string().min(1, "Please indicate if you have any special needs"),
-  delegateType: z.enum(["GOV", "SCH/PLT", "DP", "ENT", "EXP"], {
+  dietary: z
+    .string()
+    .min(1, "Please indicate if you have dietary restrictions"),
+  "special-needs": z
+    .string()
+    .min(1, "Please indicate if you have any special needs"),
+  accommodation: z.string().min(1, "Please select your accommodation status"),
+  idType: z.string().min(1, "Please select your ID type"),
+  idNumber: z.string().min(1, "Please enter your ID number"),
+  delegateType: z.enum(["GOV", "SCH/PLT", "DP", "ENT", "EXP", "CSO"], {
     errorMap: () => ({ message: "Please select a valid delegate type" }),
   }),
   position: z.string().min(1, "Please enter your position"),
   organization: z.string().min(1, "Please enter your organization"),
-  workshops: z.array(z.string()).min(1, "Please select at least one workshop"),
-  roundTables: z.array(z.string()).optional(),
-  activities: z.array(z.string()).optional(),
-})
+  // Travel info fields
+  modeOfTransport: z.string().optional(),
+  boarderName: z.string().optional(),
+  roadArrivalDate: z.string().optional(),
+  roadDepartureDate: z.string().optional(),
+  arrivalDateTime: z.string().optional(),
+  departureDateTime: z.string().optional(),
+  airline: z.string().optional(),
+  sessions: z.string().min(1, "Please select a session"),
+});
 
-type DelegateFormValues = z.infer<typeof delegateFormSchema>
+type DelegateFormValues = z.infer<typeof delegateFormSchema>;
+
+// Add this function to check if current question should be shown
 
 export default function DelegateForm() {
+  // Add this function at the top of the component, before any variable declarations
+  const shouldShowQuestion = (question: Question): boolean => {
+    // Travel questions only for non-Rwanda partner state
+    if (
+      [
+        "modeOfTransport",
+        "boarderName",
+        "roadArrivalDate",
+        "roadDepartureDate",
+        "arrivalDateTime",
+        "departureDateTime",
+        "airline",
+      ].includes(question.id)
+    ) {
+      if (formValues.state === "Rwanda") return false;
+      // Mode of transport always for non-Rwanda
+      if (question.id === "modeOfTransport") return true;
+      // Road Transport: boarderName, arrival/departure datetime gusa
+      if (formValues.modeOfTransport === "Road Transport") {
+        if (
+          ["boarderName", "roadArrivalDate", "roadDepartureDate"].includes(
+            question.id
+          )
+        )
+          return true;
+        // ntukwerekane roadArrivalDate, roadDepartureDate, airline
+        return false;
+      }
+      // Airline Transport: arrival/departure date & time, airline
+      if (formValues.modeOfTransport === "Airline Transport") {
+        if (
+          ["arrivalDateTime", "departureDateTime", "airline"].includes(
+            question.id
+          )
+        )
+          return true;
+        // boarderName, roadArrivalDate, roadDepartureDate ntibigaragare kuri airline
+        return false;
+      }
+      return false;
+    }
+    return true;
+  };
+
   // State for tracking current step and question
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string[]>>({
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [additionalInfo, setAdditionalInfo] = useState<
+    Record<string, string[]>
+  >({
     dietary: [],
     "special-needs": [],
-  })
-  const [profileImage, setProfileImage] = useState<string | null>(null)
-  const [newDietaryNeed, setNewDietaryNeed] = useState("")
-  const [newSpecialNeed, setNewSpecialNeed] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [isSummaryView, setIsSummaryView] = useState(false)
-  const [, setSelectedWorkshops] = useState<string[]>([])
-  // New state for morning and afternoon workshop selections
-  const [morningWorkshop, setMorningWorkshop] = useState<string | null>(null)
-  const [afternoonWorkshop, setAfternoonWorkshop] = useState<string | null>(null)
-  // Add formData state
-  const [formData, setFormData] = useState<Partial<DelegateFormValues>>({})
+  });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [newDietaryNeed, setNewDietaryNeed] = useState("");
+  const [newSpecialNeed, setNewSpecialNeed] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSummaryView, setIsSummaryView] = useState(false);
+  const [formData, setFormData] = useState<Partial<DelegateFormValues>>({});
 
   // Add workshops state from API
-  const [workshops, setWorkshops] = useState<Workshop[]>([])
-  const [morningWorkshops, setMorningWorkshops] = useState<Workshop[]>([])
-  const [afternoonWorkshops, setAfternoonWorkshops] = useState<Workshop[]>([])
-  const [isLoadingWorkshops, setIsLoadingWorkshops] = useState(false)
-  const [workshopsError, setWorkshopsError] = useState<string | null>(null)
+  const [workshops, setWorkshops] = useState<any[]>([]);
+  const [workshopsLoading, setWorkshopsLoading] = useState(false);
+  const [workshopsError, setWorkshopsError] = useState<string | null>(null);
 
-  const [selectedRoundTables, setSelectedRoundTables] = useState<string[]>([])
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([])
-  const [, setAnimationPosition] = useState(0)
-  const [countrySearch, setCountrySearch] = useState("")
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
-  const [filteredCountries, setFilteredCountries] = useState<string[]>(COUNTRIES)
-  const [validationError, setValidationError] = useState<string | null>(null)
+  // Fetch workshops on mount
+  useEffect(() => {
+    const fetchWorkshops = async () => {
+      setWorkshopsLoading(true);
+      setWorkshopsError(null);
+      try {
+        const res = await fetch(`${BACKEND_URL}/workshops`);
+        if (!res.ok) throw new Error("Failed to fetch workshops");
+        const data = await res.json();
+        setWorkshops(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        setWorkshopsError(err.message || "Error fetching workshops");
+      } finally {
+        setWorkshopsLoading(false);
+      }
+    };
+    fetchWorkshops();
+  }, []);
+
+  const [, setAnimationPosition] = useState(0);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [filteredCountries, setFilteredCountries] =
+    useState<string[]>(COUNTRIES);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [accommodationPlace, setAccommodationPlace] = useState("");
+  const [accommodationReason, setAccommodationReason] = useState("");
 
   // Add state for registration ID
-  const [registrationId, setRegistrationId] = useState<string>("")
+  const [registrationId, setRegistrationId] = useState<string>("");
+
+  const [idType, setIdType] = useState("");
+  const [accommodationDetails, setAccommodationDetails] = useState("");
+
+  const countryInputRef = useRef<HTMLInputElement>(null);
 
   // Setup React Hook Form
   const {
-    // control,
-    // handleSubmit: hookFormSubmit,
     setValue,
     watch,
     formState: { errors },
-    // trigger,
   } = useForm<DelegateFormValues>({
     resolver: zodResolver(delegateFormSchema),
     defaultValues: {
@@ -533,514 +633,540 @@ export default function DelegateForm() {
       phoneNumber: "",
       gender: "",
       country: "",
+      state: "",
       photo: undefined,
       dietary: "",
       "special-needs": "",
-      delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP",
+      accommodation: "",
+      idType: "",
+      idNumber: "",
+      delegateType: "GOV" as "GOV" | "SCH/PLT" | "DP" | "ENT" | "EXP" | "CSO",
       position: "",
       organization: "",
-      workshops: [],
-      roundTables: [],
-      activities: [],
+      modeOfTransport: "",
+      boarderName: "",
+      roadArrivalDate: "",
+      roadDepartureDate: "",
+      arrivalDateTime: "",
+      departureDateTime: "",
+      airline: "",
+      sessions: "",
     },
     mode: "onChange",
     reValidateMode: "onChange",
-  })
+  });
 
   // Watch form values
-  const formValues = watch()
+  const formValues = watch();
 
   // Refs
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const formContainerRef = useRef<HTMLDivElement>(null)
-  const formRef = useRef<HTMLDivElement>(null)
-  const countryInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const formContainerRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Calculate current step and question
-  const currentStep = isSummaryView ? SUMMARY_STEP : STEPS[currentStepIndex]
-  const questions = !isSummaryView ? QUESTIONS[currentStep.id as keyof typeof QUESTIONS] : []
-  const currentQuestion = !isSummaryView ? questions[currentQuestionIndex] : null
+  const currentStep = isSummaryView ? SUMMARY_STEP : STEPS[currentStepIndex];
 
-  // Calculate total questions and progress
-  const totalQuestions = STEPS.reduce((acc, step) => acc + QUESTIONS[step.id as keyof typeof QUESTIONS].length, 0)
+  // Get dynamic steps based on partner state - moved after currentStep declaration
+  const questions = !isSummaryView
+    ? QUESTIONS[currentStep.id as keyof typeof QUESTIONS].filter((q) =>
+        shouldShowQuestion(q)
+      )
+    : [];
+  const currentQuestion = !isSummaryView
+    ? questions[currentQuestionIndex]
+    : null;
 
-  // Calculate completed questions count
-  // const completedQuestionsCount = Object.keys(formValues).filter((key) => {
-  //   const value = formValues[key as keyof DelegateFormValues]
-  //   if (Array.isArray(value)) {
-  //     return value.length > 0
-  //   }
-  //   return value !== undefined && value !== ""
-  // }).length
-
-  // console.log(completedQuestionsCount)
-
-  // Calculate progress percentage - start at 0% and increment uniformly
+  // Calculate total questions and progress - Updated to be dynamic
+  const totalQuestions = STEPS.reduce((acc, step) => {
+    const stepQuestions = QUESTIONS[step.id as keyof typeof QUESTIONS] || [];
+    const visibleQuestions = stepQuestions.filter((q) => shouldShowQuestion(q));
+    return acc + visibleQuestions.length;
+  }, 0);
   const calculateProgress = () => {
-    if (isSummaryView) return 100
+    if (isSummaryView) return 100;
 
     // Calculate based on current question position
-    let questionsSoFar = 0
+    let questionsSoFar = 0;
     for (let i = 0; i < currentStepIndex; i++) {
-      questionsSoFar += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS].length
+      questionsSoFar +=
+        QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS]?.length || 0;
     }
-    questionsSoFar += currentQuestionIndex
+    questionsSoFar += currentQuestionIndex;
 
     // Calculate percentage based on current position (not completed questions)
-    const percentage = Math.floor((questionsSoFar / totalQuestions) * 100)
+    const percentage = Math.floor((questionsSoFar / totalQuestions) * 100);
 
     // Return 0 for the first question, otherwise return calculated percentage
-    return questionsSoFar === 0 ? 0 : percentage
-  }
+    return questionsSoFar === 0 ? 0 : percentage;
+  };
 
-  const progress = calculateProgress()
+  const progress = calculateProgress();
 
   // Calculate current question number
-  const currentQuestionNumber = calculateCurrentQuestionNumber()
-
-  // Calculate selection capacity for round tables
-
+  const currentQuestionNumber = calculateCurrentQuestionNumber();
   // Animation for the border
   useEffect(() => {
     const interval = setInterval(() => {
-      setAnimationPosition((prev) => (prev + 1) % 100)
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Update form data when workshops, round tables, or activities change
-  useEffect(() => {
-    // Update workshops in form data when morning or afternoon selections change
-    if (morningWorkshop || afternoonWorkshop) {
-      const workshopSelections = [
-        ...(morningWorkshop ? [morningWorkshop] : []),
-        ...(afternoonWorkshop ? [afternoonWorkshop] : []),
-      ]
-
-      setValue("workshops", workshopSelections)
-      setFormData((prev) => ({
-        ...prev,
-        workshops: workshopSelections,
-      }))
-
-      // Update selectedWorkshops state for preview
-      setSelectedWorkshops(workshopSelections)
-      console.log("Selected workshops:", workshopSelections) // ✅ safe to log directly
-    } else {
-      setValue("workshops", [])
-      setFormData((prev) => ({
-        ...prev,
-        workshops: [],
-      }))
-      setSelectedWorkshops([])
-    }
-  }, [morningWorkshop, afternoonWorkshop, setValue]) // ✅ No warning now
-
-  useEffect(() => {
-    if (selectedRoundTables.length > 0) {
-      setValue("roundTables", selectedRoundTables)
-    }
-  }, [selectedRoundTables, setValue])
-
-  useEffect(() => {
-    if (selectedActivities.length > 0) {
-      setValue("activities", selectedActivities)
-    }
-  }, [selectedActivities, setValue])
+      setAnimationPosition((prev) => (prev + 1) % 100);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
 
   // Filter countries based on search
   useEffect(() => {
     if (countrySearch.trim() === "") {
-      setFilteredCountries(COUNTRIES)
+      setFilteredCountries(COUNTRIES);
     } else {
-      const filtered = COUNTRIES.filter((country) => country.toLowerCase().includes(countrySearch.toLowerCase()))
-      setFilteredCountries(filtered)
+      const filtered = COUNTRIES.filter((country) =>
+        country.toLowerCase().includes(countrySearch.toLowerCase())
+      );
+      setFilteredCountries(filtered);
     }
-  }, [countrySearch])
+  }, [countrySearch]);
 
   // Close country dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (countryInputRef.current && !countryInputRef.current.contains(event.target as Node)) {
-        setShowCountryDropdown(false)
+      if (
+        countryInputRef.current &&
+        !countryInputRef.current.contains(event.target as Node)
+      ) {
+        setShowCountryDropdown(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Scroll to top when changing questions
   useEffect(() => {
     if (formContainerRef.current) {
-      formContainerRef.current.scrollTop = 0
+      formContainerRef.current.scrollTop = 0;
     }
-  }, [currentStepIndex, currentQuestionIndex, isSummaryView])
+  }, [currentStepIndex, currentQuestionIndex, isSummaryView]);
 
   function calculateCurrentQuestionNumber() {
-    let questionNumber = 0
+    let questionNumber = 0;
     for (let i = 0; i < currentStepIndex; i++) {
-      questionNumber += QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS].length
+      questionNumber +=
+        QUESTIONS[STEPS[i].id as keyof typeof QUESTIONS]?.length || 0;
     }
-    questionNumber += currentQuestionIndex + 1
-    return questionNumber
+    questionNumber += currentQuestionIndex + 1;
+    return questionNumber;
   }
-
   // Handle form input changes
   const handleInputChange = (id: string, value: string) => {
-    setValidationError(null)
-    setValue(id as keyof DelegateFormValues, value)
-    setFormData((prev) => ({ ...prev, [id]: value }))
-  }
+    setValidationError(null);
+    if (id === "delegateType") {
+      // Map label to enum value
+      const enumValue = getDelegateTypeEnum(value);
+      setValue(id as keyof DelegateFormValues, enumValue);
+      setFormData((prev) => ({
+        ...prev,
+        [id]: enumValue as DelegateFormValues["delegateType"],
+      }));
+    } else {
+      setValue(id as keyof DelegateFormValues, value);
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
+  };
 
   // Handle name input changes
   const handleNameChange = (field: "firstName" | "lastName", value: string) => {
-    setValidationError(null)
-
+    setValidationError(null);
     // Update formData state
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-      fullNames: field === "firstName" ? `${value} ${prev.lastName || ""}` : `${prev.firstName || ""} ${value}`,
-    }))
-
+      fullNames:
+        field === "firstName"
+          ? `${value} ${prev.lastName || ""}`
+          : `${prev.firstName || ""} ${value}`,
+    }));
     // Update React Hook Form values
-    setValue(field, value)
+    setValue(field, value);
     setValue(
       "fullNames",
-      field === "firstName" ? `${value} ${formData.lastName || ""}` : `${formData.firstName || ""} ${value}`,
-    )
-  }
-
+      field === "firstName"
+        ? `${value} ${formData.lastName || ""}`
+        : `${formData.firstName || ""} ${value}`
+    );
+  };
   // Handle radio button changes
   const handleRadioChange = (id: string, value: string) => {
-    setValidationError(null)
-    setValue(id as keyof DelegateFormValues, value)
-    setFormData((prev) => ({ ...prev, [id]: value }))
-  }
-
-  // Handle morning workshop selection
-  const handleMorningWorkshopSelect = (workshopId: string) => {
-    // Prevent selection of workshop 2 (it's full)
-    if (workshopId === "ws2") {
-      toast.error("This workshop is full and cannot be selected.")
-      return
-    }
-
-    const workshop = morningWorkshops.find((w) => w.id === workshopId)
-    // Check if workshop exists and if it's full
-    if (workshop && workshop.registered >= workshop.capacity) {
-      toast.error("This workshop is full and cannot be selected.")
-      return // Prevent selection if full
-    }
-    setValidationError(null)
-    setMorningWorkshop(morningWorkshop === workshopId ? null : workshopId)
-  }
-
-  // Handle afternoon workshop selection
-  const handleAfternoonWorkshopSelect = (workshopId: string) => {
-    // Prevent selection of workshop 6 (it's full)
-    if (workshopId === "ws6") {
-      toast.error("This workshop is full and cannot be selected.")
-      return
-    }
-
-    const workshop = afternoonWorkshops.find((w) => w.id === workshopId)
-    // Check if workshop exists and if it's full
-    if (workshop && workshop.registered >= workshop.capacity) {
-      toast.error("This workshop is full and cannot be selected.")
-      return // Prevent selection if full
-    }
-    setValidationError(null)
-    setAfternoonWorkshop(afternoonWorkshop === workshopId ? null : workshopId)
-  }
-
-  // Handle round table selection
-  const handleRoundTableToggle = (roundTableId: string) => {
-    setValidationError(null)
-    const currentSelection = selectedRoundTables
-    let newRoundTables
-    if (currentSelection.includes(roundTableId)) {
-      // Remove the ID if it exists
-      newRoundTables = currentSelection.filter((id) => id !== roundTableId)
-    } else {
-      // Add the ID if it doesn't exist
-      newRoundTables = [...currentSelection, roundTableId]
-    }
-    setSelectedRoundTables(newRoundTables)
-    setValue("roundTables", newRoundTables)
-  }
-
-  // Handle activity selection
-  const handleActivityToggle = (activityId: string) => {
-    if (selectedActivities.includes(activityId)) {
-      const newActivities = selectedActivities.filter((id) => id !== activityId)
-      setSelectedActivities(newActivities)
-      setValue("activities", newActivities)
-    } else {
-      const newActivities = [...selectedActivities, activityId]
-      setSelectedActivities(newActivities)
-      setValue("activities", newActivities)
-    }
-  }
-
+    setValidationError(null);
+    setValue(id as keyof DelegateFormValues, value);
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
   // Handle country selection
   const handleCountrySelect = (country: string) => {
-    handleInputChange("country", country)
-    setCountrySearch(country)
-    setShowCountryDropdown(false)
-  }
+    handleInputChange("country", country);
+    setCountrySearch(country);
+    setShowCountryDropdown(false);
+  };
 
   // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setProfileImage(event.target.result as string)
-          setValue("photo", file)
+          setProfileImage(event.target.result as string);
+          setValue("photo", file);
         }
-      }
-      reader.readAsDataURL(file)
+      };
+      reader.readAsDataURL(file);
     }
-  }
-
+  };
   // Handle file upload area click
   const handleUploadAreaClick = () => {
-    fileInputRef.current?.click()
-  }
-
+    fileInputRef.current?.click();
+  };
   // Handle adding dietary need
   const handleAddDietaryNeed = () => {
     if (newDietaryNeed.trim() !== "") {
       setAdditionalInfo({
         ...additionalInfo,
         dietary: [...(additionalInfo.dietary || []), newDietaryNeed],
-      })
-      setNewDietaryNeed("")
+      });
+      setNewDietaryNeed("");
     }
-  }
-
+  };
   // Handle adding special need
   const handleAddSpecialNeed = () => {
     if (newSpecialNeed.trim() !== "") {
       setAdditionalInfo({
         ...additionalInfo,
-        "special-needs": [...(additionalInfo["special-needs"] || []), newSpecialNeed],
-      })
-      setNewSpecialNeed("")
+        "special-needs": [
+          ...(additionalInfo["special-needs"] || []),
+          newSpecialNeed,
+        ],
+      });
+      setNewSpecialNeed("");
     }
-  }
-
+  };
   // Validate current question
   const validateCurrentQuestion = (): boolean => {
-    if (!currentQuestion) return true
+    if (!currentQuestion) return true;
 
     // Special validation for name fields
     if (currentQuestion.id === "name") {
       if (!formData.firstName || !formData.lastName) {
-        setValidationError("Both first and last name are required")
-        return false
+        setValidationError("Both first and last name are required");
+        return false;
       }
-
-      // Set the fullNames field for form validation
-      setValue("firstName", formData.firstName || "")
-      setValue("lastName", formData.lastName || "")
-      setValue("fullNames", `${formData.firstName || ""} ${formData.lastName || ""}`)
-      return true
+      setValue("firstName", formData.firstName || "");
+      setValue("lastName", formData.lastName || "");
+      setValue(
+        "fullNames",
+        `${formData.firstName || ""} ${formData.lastName || ""}`
+      );
+      return true;
     }
 
-    // Special validation for workshops
-    if (currentQuestion.id === "workshops" && !morningWorkshop && !afternoonWorkshop) {
-      setValidationError("Please select at least one workshop")
-      return false
-    }
-
-    // Special validation for round tables
-    if (currentQuestion.id === "roundTables" && selectedRoundTables.length === 0) {
-      setValidationError("Please select at least one round table")
-      return false
-    }
-
-    // Activities are optional, so no validation needed
-
-    const value = formValues[currentQuestion.id as keyof DelegateFormValues]
-
-    // Check if required
+    // Special validation for travel info fields
     if (
-      currentQuestion.required &&
-      (!value || value === "") &&
-      currentQuestion.id !== "workshops" &&
-      currentQuestion.id !== "roundTables"
+      [
+        "modeOfTransport",
+        "boarderName",
+        "roadArrivalDate",
+        "roadDepartureDate",
+        "arrivalDateTime",
+        "departureDateTime",
+        "airline",
+      ].includes(currentQuestion.id)
     ) {
-      setValidationError("This field is required")
-      return false
-    }
-
-    // Check custom validation
-    if (value && currentQuestion.validation) {
-      const error = currentQuestion.validation(value)
-      if (error) {
-        setValidationError(error)
-        return false
+      if (formValues.state === "Rwanda") return true;
+      if (
+        currentQuestion.id === "modeOfTransport" &&
+        !formValues.modeOfTransport
+      ) {
+        setValidationError("Please select mode of transport");
+        return false;
       }
+      if (formValues.modeOfTransport === "Road Transport") {
+        if (currentQuestion.id === "boarderName" && !formValues.boarderName) {
+          setValidationError("Please enter border name");
+          return false;
+        }
+        if (
+          (currentQuestion.id === "roadArrivalDate" ||
+            currentQuestion.id === "roadDepartureDate") &&
+          !formValues[currentQuestion.id]
+        ) {
+          setValidationError("Please select a date");
+          return false;
+        }
+        if (
+          (currentQuestion.id === "arrivalDateTime" ||
+            currentQuestion.id === "departureDateTime") &&
+          !formValues[currentQuestion.id]
+        ) {
+          setValidationError("Please select a date and time");
+          return false;
+        }
+      }
+      if (formValues.modeOfTransport === "Airline Transport") {
+        if (
+          (currentQuestion.id === "arrivalDateTime" ||
+            currentQuestion.id === "departureDateTime") &&
+          !formValues[currentQuestion.id]
+        ) {
+          setValidationError("Please select a date and time");
+          return false;
+        }
+        if (currentQuestion.id === "airline" && !formValues.airline) {
+          setValidationError("Please enter airline name");
+          return false;
+        }
+      }
+    }
+    // Special validation for sessions
+    if (currentQuestion.id === "sessions" && !formValues.sessions) {
+      setValidationError("Please select a session");
+      return false;
     }
 
     // Special validation for dietary and special needs
-    if (currentQuestion.id === "dietary" && value === "Yes" && additionalInfo.dietary.length === 0) {
-      setValidationError("Please add at least one dietary restriction")
-      return false
+    if (
+      currentQuestion.id === "dietary" &&
+      formValues.dietary === "Yes" &&
+      additionalInfo.dietary.length === 0
+    ) {
+      setValidationError("Please add at least one dietary restriction");
+      return false;
+    }
+    if (
+      currentQuestion.id === "special-needs" &&
+      formValues["special-needs"] === "Yes" &&
+      additionalInfo["special-needs"].length === 0
+    ) {
+      setValidationError("Please add at least one special need");
+      return false;
     }
 
-    if (currentQuestion.id === "special-needs" && value === "Yes" && additionalInfo["special-needs"].length === 0) {
-      setValidationError("Please add at least one special need")
-      return false
+    // Special validation for accommodation details
+    if (currentQuestion.id === "accommodation") {
+      if (
+        (formValues.accommodation === "Booked" ||
+          formValues.accommodation === "Other") &&
+        !accommodationDetails.trim()
+      ) {
+        setValidationError(
+          `Please specify your ${
+            formValues.accommodation === "Booked"
+              ? "hotel/accommodation place"
+              : "accommodation arrangement"
+          }`
+        );
+        return false;
+      }
     }
 
-    return true
-  }
+    // Special validation for ID number based on type
+    if (currentQuestion.id === "idNumber") {
+      const idNumber = formValues.idNumber || "";
+      if (formValues.idType === "National ID Number") {
+        if (!idNumber || idNumber.length !== 16) {
+          setValidationError("National ID must be exactly 16 characters");
+          return false;
+        }
+      } else if (formValues.idType === "Passport Number") {
+        if (!idNumber || idNumber.length < 6) {
+          setValidationError("Passport number must be at least 6 characters");
+          return false;
+        }
+      } else {
+        setValidationError("ID number is required");
+        return false;
+      }
+    }
 
+    return true;
+  };
   // Handle next question
   const handleNext = async () => {
     if (isSummaryView) {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       try {
-        await handleFormSubmit()
+        await handleFormSubmit();
       } catch (error) {
-        console.error("Form submission error:", error)
-        toast.error("Failed to submit registration")
+        console.error("Form submission error:", error);
+        toast.error("Failed to submit registration");
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
-      return
+      return;
     }
-
     if (!validateCurrentQuestion()) {
-      return
+      return;
     }
-
     // Clear validation error since we're moving to next question
-    setValidationError(null)
-
+    setValidationError(null);
     // Move to next question/step
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1)
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentStepIndex < STEPS.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1)
-      setCurrentQuestionIndex(0)
+      setCurrentStepIndex(currentStepIndex + 1);
+      setCurrentQuestionIndex(0);
     } else {
-      setIsSummaryView(true)
+      setIsSummaryView(true);
     }
-  }
-
+  };
   // Add a direct access button for testing
   const debugReset = () => {
-    setCurrentStepIndex(0)
-    setCurrentQuestionIndex(0)
-    setIsSummaryView(false)
-  }
-
+    setCurrentStepIndex(0);
+    setCurrentQuestionIndex(0);
+    setIsSummaryView(false);
+  };
   // Handle previous question
   const handleBack = () => {
     if (isSummaryView) {
-      setIsSummaryView(false)
-      return
+      setIsSummaryView(false);
+      return;
     }
-
-    setValidationError(null)
-
+    setValidationError(null);
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1)
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     } else if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1)
-      const prevQuestions = QUESTIONS[STEPS[currentStepIndex - 1].id as keyof typeof QUESTIONS]
-      setCurrentQuestionIndex(prevQuestions.length - 1)
+      const prevStep = STEPS[currentStepIndex - 1];
+      const prevQuestions = QUESTIONS[
+        prevStep.id as keyof typeof QUESTIONS
+      ].filter((q) => shouldShowQuestion(q));
+      setCurrentStepIndex(currentStepIndex - 1);
+      setCurrentQuestionIndex(prevQuestions.length - 1);
     }
-  }
-
-  // Form submission handler
-  // Form submission handler
+    // If at very first question of first step, do nothing
+  };
+  // Form submission handler - Updated to include travel info
   const handleFormSubmit = async () => {
-    setIsSubmitting(true)
-
+    setIsSubmitting(true);
     try {
-      const formDataToSend = new FormData()
-      formDataToSend.append("firstName", formValues.firstName || "")
-      formDataToSend.append("lastName", formValues.lastName || "")
-      formDataToSend.append("email", formValues.email || "")
-      formDataToSend.append("username", formValues.email || "")
-      formDataToSend.append("myGender", formValues.gender || "Not Specified")
-      formDataToSend.append("role", "DELEGATE")
-      formDataToSend.append("phonenumber", formValues.phoneNumber || "")
-
-      // Map delegate type to expected backend values
-      const delegateTypeMap: Record<string, string> = {
-        "Public Sector Representative(GOV)": "GOV",
-        "TVET Providers Representative(SCH/PLT)": "SCH/PLT",
-        "Donor and Partner Representative(DP)": "DP",
-        "Private Sector Representative(ENT)": "ENT",
-        "TVET Expert Representative(EXP)": "EXP",
+      const formDataToSend = new FormData();
+      formDataToSend.append("firstName", formValues.firstName || "");
+      formDataToSend.append("lastName", formValues.lastName || "");
+      formDataToSend.append("email", formValues.email || "");
+      formDataToSend.append("username", formValues.email || "");
+      formDataToSend.append("myGender", formValues.gender || "");
+      formDataToSend.append("role", "DELEGATE");
+      if (
+        formValues.idType === "National ID Number" ||
+        formValues.idType === "Passport Number"
+      ) {
+        formDataToSend.append("national_id", formValues.idNumber?.trim() || "");
       }
 
-      const mappedDelegateType = delegateTypeMap[formValues.delegateType] || formValues.delegateType
-      formDataToSend.append("delegate_type", mappedDelegateType)
-
-      // Additional information
-      formDataToSend.append("country", formValues.country || "")
-      formDataToSend.append("organization", formValues.organization || "")
-      formDataToSend.append("position", formValues.position || "")
-
-      // Handle dietary restrictions
-      if (formValues.dietary === "Yes" && additionalInfo.dietary?.length > 0) {
-        formDataToSend.append("dietary_restrictions", additionalInfo.dietary.join(", "))
-      } else {
-        formDataToSend.append("dietary_restrictions", "No")
-      }
-
-      // Handle special needs
-      if (formValues["special-needs"] === "Yes" && additionalInfo["special-needs"]?.length > 0) {
-        formDataToSend.append("special_needs", additionalInfo["special-needs"].join(", "))
-      } else {
-        formDataToSend.append("special_needs", "No")
-      }
-
-      formDataToSend.append("selected_event", "Global Skill Connect")
-
-      // Handle profile picture
+      formDataToSend.append("phonenumber", formValues.phoneNumber || "");
+      formDataToSend.append("delegate_type", formValues.delegateType || "");
+      formDataToSend.append("country", formValues.country || "");
+      formDataToSend.append("partner_state", formValues.state || "");
+      formDataToSend.append("organization", formValues.organization || "");
+      formDataToSend.append("position", formValues.position || "");
+      // Profile picture (file)
       if (formValues.photo) {
-        formDataToSend.append("profile_picture_url", formValues.photo)
+        formDataToSend.append("profile_picture_url", formValues.photo);
+      } else {
+        formDataToSend.append("profile_picture_url", "");
       }
-
-      if (morningWorkshop) {
-        formDataToSend.append("workshopIds", morningWorkshop)
+      // Dietary restrictions
+      formDataToSend.append(
+        "dietary_restrictions",
+        formValues.dietary === "Yes" && additionalInfo.dietary.length > 0
+          ? additionalInfo.dietary.join(", ")
+          : "No"
+      );
+      // Special needs
+      formDataToSend.append(
+        "special_needs",
+        formValues["special-needs"] === "Yes" &&
+          additionalInfo["special-needs"].length > 0
+          ? additionalInfo["special-needs"].join(", ")
+          : "No"
+      );
+      // Accommodation status and details
+      formDataToSend.append(
+        "accommodation_status",
+        formValues.accommodation || ""
+      );
+      formDataToSend.append(
+        "accommodation_details",
+        accommodationDetails || ""
+      );
+      // Travel info
+      if (formValues.state === "Rwanda") {
+      } else if (formValues.modeOfTransport === "Airline Transport") {
+        formDataToSend.append("mode_of_transport", "AIRLINE");
+        formDataToSend.append("boarder_name", "");
+        formDataToSend.append(
+          "arrival_datetime",
+          formValues.arrivalDateTime || ""
+        );
+        formDataToSend.append(
+          "departure_datetime",
+          formValues.departureDateTime || ""
+        );
+        formDataToSend.append("airline", formValues.airline || "");
+      } else if (formValues.modeOfTransport === "Road Transport") {
+        formDataToSend.append("mode_of_transport", "ROAD");
+        formDataToSend.append("boarder_name", formValues.boarderName || "");
+        formDataToSend.append(
+          "road_arrival_datetime",
+          formValues.roadArrivalDate
+            ? new Date(formValues.roadArrivalDate).toISOString()
+            : ""
+        );
+        formDataToSend.append(
+          "road_departure_datetime",
+          formValues.roadDepartureDate
+            ? new Date(formValues.roadDepartureDate).toISOString()
+            : ""
+        );
+        formDataToSend.append("airline", "");
+      } else {
+        formDataToSend.append("mode_of_transport", "");
+        formDataToSend.append("boarder_name", "");
+        formDataToSend.append(
+          "road_arrival_datetime",
+          formValues.roadArrivalDate
+            ? new Date(formValues.roadArrivalDate).toISOString()
+            : ""
+        );
+        formDataToSend.append(
+          "road_departure_datetime",
+          formValues.roadDepartureDate
+            ? new Date(formValues.roadDepartureDate).toISOString()
+            : ""
+        );
+        formDataToSend.append(
+          "arrival_datetime",
+          formValues.arrivalDateTime
+            ? new Date(formValues.arrivalDateTime).toISOString()
+            : ""
+        );
+        formDataToSend.append(
+          "departure_datetime",
+          formValues.departureDateTime
+            ? new Date(formValues.departureDateTime).toISOString()
+            : ""
+        );
+        formDataToSend.append("airline", "");
       }
-      if (afternoonWorkshop) {
-        formDataToSend.append("workshopIds", afternoonWorkshop)
-      }
-
-      // Handle round tables
-      if (selectedRoundTables.length > 0) {
-        selectedRoundTables.forEach((id) => {
-          formDataToSend.append("selected_round_tables[]", getRoundTableName(id))
-        })
-      }
-
-      // Handle activities
-      if (selectedActivities.length > 0) {
-        selectedActivities.forEach((id) => {
-          formDataToSend.append("selected_activities[]", getActivityName(id))
-        })
-      }
+      // Event/session info
+      formDataToSend.append("selected_event", "Global Skill Connect");
+      formDataToSend.append("workshopIds", formValues.sessions || "");
+      // Optional arrays (empty for now)
+      formDataToSend.append("selected_activities", "");
+      formDataToSend.append("selected_round_tables", "");
 
       // Log form data before sending
-      console.log("Form data being sent:", Object.fromEntries(formDataToSend))
-
+      console.log("Form data being sent:", Object.fromEntries(formDataToSend));
       // Add timeout to the fetch request
-      const controller = new AbortController()
-      const requestTimeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-
+      const controller = new AbortController();
+      const requestTimeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       const response = await fetch(`${BACKEND_URL}/delegates`, {
         method: "POST",
         headers: {
@@ -1048,25 +1174,22 @@ export default function DelegateForm() {
         },
         body: formDataToSend,
         signal: controller.signal,
-      })
-
-      clearTimeout(requestTimeout)
-
+      });
+      clearTimeout(requestTimeout);
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Server error:", errorData)
-        throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`)
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            `Registration failed: ${response.status} ${response.statusText}`
+        );
       }
-
-      const responseData = await response.json()
-      console.log("Registration successful:", responseData)
-
+      const responseData = await response.json();
+      console.log("Registration successful:", responseData);
       // Generate random registration ID between 001 and 500
-      const randomNumber = Math.floor(Math.random() * 500) + 1
-      const regId = `RFF${String(randomNumber).padStart(3, "0")}`
-      setRegistrationId(regId)
-
-      setIsSubmitted(true)
+      const randomNumber = Math.floor(Math.random() * 500) + 1;
+      const regId = `RFF${String(randomNumber).padStart(3, "0")}`;
+      setRegistrationId(regId);
+      setIsSubmitted(true);
       toast.success("Registration submitted successfully!", {
         style: {
           backgroundColor: "#dcfce7",
@@ -1077,19 +1200,18 @@ export default function DelegateForm() {
         },
         dismissible: true,
         duration: 4000,
-      })
+      });
     } catch (error) {
-      console.error("Registration error:", error)
+      console.error("Registration error:", error);
 
-      let errorMessage = "Failed to submit registration"
+      let errorMessage = "Failed to submit registration";
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          errorMessage = "Registration request timed out. Please try again."
+          errorMessage = "Registration request timed out. Please try again.";
         } else {
-          errorMessage = error.message
+          errorMessage = error.message;
         }
       }
-
       toast.error(errorMessage, {
         style: {
           backgroundColor: "#fef2f2",
@@ -1100,69 +1222,41 @@ export default function DelegateForm() {
         },
         dismissible: true,
         duration: 4000,
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
-
+  };
   // Check if current question has a value
   const hasValue = (id: string): boolean => {
-    if (id === "workshops") return morningWorkshop !== null || afternoonWorkshop !== null
-    if (id === "roundTables") return selectedRoundTables.length > 0
-    if (id === "activities") return true // Activities are optional
-    if (id === "name") return !!(formData.firstName && formData.lastName)
-    return formValues[id as keyof DelegateFormValues] !== undefined && formValues[id as keyof DelegateFormValues] !== ""
-  }
-  console.log(hasValue("id"))
+    if (id === "sessions") return !!formValues.sessions;
+
+    if (id === "name") return !!(formData.firstName && formData.lastName);
+    return (
+      formValues[id as keyof DelegateFormValues] !== undefined &&
+      formValues[id as keyof DelegateFormValues] !== ""
+    );
+  };
+  console.log(hasValue("id"));
 
   // Get a formatted preview label for a question
   const getPreviewLabel = (questionId: string): string => {
     for (const stepId in QUESTIONS) {
-      const foundQuestion = QUESTIONS[stepId as keyof typeof QUESTIONS].find((q) => q.id === questionId)
+      const foundQuestion = QUESTIONS[stepId as keyof typeof QUESTIONS].find(
+        (q) => q.id === questionId
+      );
       if (foundQuestion) {
-        return foundQuestion.previewLabel || foundQuestion.question.replace("?", "")
+        return (
+          foundQuestion.previewLabel || foundQuestion.question.replace("?", "")
+        );
       }
     }
-    return questionId
-  }
-
-  // Get workshop name by ID
-  const getWorkshopName = (id: string): string => {
-    // Log for debugging
-    console.log("Getting workshop name for ID:", id)
-    console.log("Current workshops data:", workshops)
-
-    // Try to find the workshop in the array
-    const workshop = workshops.find((w) => w.id === id)
-
-    // Log result
-    console.log("Found workshop:", workshop)
-
-    // Return name if found, otherwise return ID as fallback
-    return workshop ? workshop.name : `Workshop ${id}`
-  }
-
-  // Get round table name by ID
-  const getRoundTableName = (id: string): string => {
-    const roundTable = ROUND_TABLES.find((rt) => rt.id === id)
-    return roundTable ? roundTable.name : id
-  }
-
-  // Get activity name by ID
-  const getActivityName = (id: string): string => {
-    const activity = ACTIVITIES.find((a) => a.id === id)
-    return activity ? activity.name : id
-  }
+    return questionId;
+  };
 
   // Render form input based on question type
   const renderFormInput = () => {
-    if (!currentQuestion) return null
-
-    // Get field error from React Hook Form
-    // const fieldError = errors[currentQuestion.id as keyof DelegateFormValues]
-    // console.log("Field error:", fieldError)
-
+    if (!currentQuestion) return null;
     switch (currentQuestion.type) {
       case "name":
         return (
@@ -1182,43 +1276,98 @@ export default function DelegateForm() {
               className="h-12 text-lg"
             />
           </div>
-        )
+        );
       case "text":
       case "email":
-        const isPhoneField = currentQuestion.id === "phoneNumber"
-        const phoneValue = isPhoneField ? formValues[currentQuestion.id as keyof typeof formValues] || "" : ""
-        const hasPhoneError = isPhoneField && phoneValue.length > 0 && !phoneRegex.test(phoneValue)
+        const isPhoneField = currentQuestion.id === "phoneNumber";
+        const phoneValue = isPhoneField
+          ? formValues[currentQuestion.id as keyof typeof formValues] || ""
+          : "";
+        const hasPhoneError =
+          isPhoneField && phoneValue.length > 0 && !phoneRegex.test(phoneValue);
 
         return (
           <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
             <Input
               type={currentQuestion.type}
               placeholder={currentQuestion.placeholder || ""}
-              value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
-              onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
-              className={cn("w-full h-12 text-lg", hasPhoneError ? "border-red-500 focus-visible:ring-red-500" : "")}
+              value={
+                formValues[currentQuestion.id as keyof typeof formValues] || ""
+              }
+              onChange={(e) =>
+                handleInputChange(currentQuestion.id, e.target.value)
+              }
+              className={cn(
+                "w-full h-12 text-lg",
+                hasPhoneError ? "border-red-500 focus-visible:ring-red-500" : ""
+              )}
             />
             {hasPhoneError && (
               <p className="text-red-500 text-sm mt-1">
-                Phone number must start with &apos;+&apos; and be at least 10 characters long
+                Phone number must start with &apos;+&apos; and be at least 10
+                characters long
               </p>
             )}
           </div>
-        )
+        );
+      case "datetime-local":
+        return (
+          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
+            <Input
+              type="datetime-local"
+              value={
+                formValues[currentQuestion.id as keyof typeof formValues] || ""
+              }
+              onChange={(e) =>
+                handleInputChange(currentQuestion.id, e.target.value)
+              }
+              className="w-full h-12 text-lg"
+            />
+          </div>
+        );
       case "textarea":
         return (
           <Textarea
             placeholder={currentQuestion.placeholder || ""}
-            value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
-            onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
+            value={
+              formValues[currentQuestion.id as keyof typeof formValues] || ""
+            }
+            onChange={(e) =>
+              handleInputChange(currentQuestion.id, e.target.value)
+            }
             className="w-full max-w-full md:max-w-md mx-auto mt-6 min-h-[150px] text-lg"
           />
-        )
+        );
       case "select":
+        if (currentQuestion.id === "delegateType") {
+          return (
+            <Select
+              value={getDelegateTypeLabel(formValues.delegateType)}
+              onValueChange={(label) =>
+                handleInputChange("delegateType", label)
+              }
+            >
+              <SelectTrigger className="w-full max-w-full md:max-w-md mx-auto mt-6 h-12 text-lg">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
+                {delegateTypeOptions.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }
         return (
           <Select
-            value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
-            onValueChange={(value) => handleInputChange(currentQuestion.id, value)}
+            value={
+              formValues[currentQuestion.id as keyof typeof formValues] || ""
+            }
+            onValueChange={(value) =>
+              handleInputChange(currentQuestion.id, value)
+            }
           >
             <SelectTrigger className="w-full max-w-full md:max-w-md mx-auto mt-6 h-12 text-lg">
               <SelectValue placeholder="Select an option" />
@@ -1231,10 +1380,13 @@ export default function DelegateForm() {
               ))}
             </SelectContent>
           </Select>
-        )
+        );
       case "country":
         return (
-          <div className="w-full max-w-full md:max-w-md mx-auto mt-6" ref={countryInputRef}>
+          <div
+            className="w-full max-w-full md:max-w-md mx-auto mt-6"
+            ref={countryInputRef}
+          >
             <div className="relative">
               <Input
                 key={`country-${currentQuestion.id}`}
@@ -1242,11 +1394,16 @@ export default function DelegateForm() {
                 placeholder="Search for a country..."
                 value={countrySearch || formValues.country || ""}
                 onChange={(e) => {
-                  setCountrySearch(e.target.value)
-                  setShowCountryDropdown(true)
+                  setCountrySearch(e.target.value);
+                  setShowCountryDropdown(true);
                 }}
                 onFocus={() => setShowCountryDropdown(true)}
-                className={cn("w-full h-12 text-lg", errors.country ? "border-red-500 focus-visible:ring-red-500" : "")}
+                className={cn(
+                  "w-full h-12 text-lg",
+                  errors.country
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : ""
+                )}
               />
               {showCountryDropdown && (
                 <div className="absolute z-10 w-full max-h-60 overflow-y-auto border rounded-md bg-white shadow-md mt-1">
@@ -1256,7 +1413,9 @@ export default function DelegateForm() {
                         key={country}
                         className={cn(
                           "p-3 cursor-pointer hover:bg-gray-100",
-                          formValues.country === country ? "bg-blue-50 text-[#026FB4]" : "",
+                          formValues.country === country
+                            ? "bg-blue-50 text-[#026FB4]"
+                            : ""
                         )}
                         onClick={() => handleCountrySelect(country)}
                       >
@@ -1269,203 +1428,132 @@ export default function DelegateForm() {
                 </div>
               )}
             </div>
-            {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message as string}</p>}
-          </div>
-        )
-      case "workshops":
-        return (
-          <div className="w-full max-w-2xl mx-auto mt-6">
-            {currentQuestion.description && (
-              <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.description}</div>
-            )}
-
-            {isLoadingWorkshops ? (
-              <div className="text-center py-10">
-                <div className="w-10 h-10 border-2 border-[#026FB4] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading workshops...</p>
-              </div>
-            ) : workshopsError ? (
-              <div className="text-center text-red-500 mb-4">{workshopsError}</div>
-            ) : (
-              <>
-                {/* Morning Workshops Section */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-medium text-center mb-4">Morning Session</h3>
-                  <p className="text-sm text-center text-gray-500 mb-4">Select one workshop for the morning session</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    {morningWorkshops.map((workshop) => {
-                      // Force workshop 2 to appear full
-                      const isFull = workshop.registered >= workshop.capacity
-                      const remainingCapacity =  workshop.capacity - workshop.registered
-                      return (
-                        <div
-                          key={`morning-${workshop.id}`}
-                          className={cn(
-                            "border rounded-lg p-4 text-center transition-all",
-                            isFull
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70 blur-[0.5px]" // Added blur effect for full workshops
-                              : morningWorkshop === workshop.id
-                                ? "border-[#026FB4] bg-blue-50 cursor-pointer" // Style for selected
-                                : "border-gray-200 hover:border-gray-300 cursor-pointer", // Style for available
-                          )}
-                          onClick={() => !isFull && handleMorningWorkshopSelect(workshop.id)} // Prevent click if full
-                        >
-                          <div className="flex justify-center mb-3">
-                            <div
-                              className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-                                isFull ? "bg-gray-200" : "bg-blue-100", // Icon background for full
-                              )}
-                            >
-                              <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-                            </div>
-                          </div>
-                          <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>
-                            {workshop.name}
-                          </div>
-                          <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-                            {workshop.venue} | {workshop.schedule}
-                          </div>
-                          {/* Display remaining capacity or 'Full' message */}
-                          <div className={cn("text-sm font-medium mt-2", isFull ? "text-red-500" : "text-green-600")}>
-                            {isFull ? "No more spots remaining" : `${remainingCapacity} spot(s) remaining`}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Afternoon Workshops Section */}
-                <div>
-                  <h3 className="text-lg font-medium text-center mb-4">Afternoon Session</h3>
-                  <p className="text-sm text-center text-gray-500 mb-4">
-                    Select one workshop for the afternoon session
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    {afternoonWorkshops.map((workshop) => {
-                      // Force workshop 6 to appear full
-                      const isFull = workshop.id === "ws6" ? true : workshop.registered >= workshop.capacity
-                      const remainingCapacity = workshop.id === "ws6" ? 0 : workshop.capacity - workshop.registered
-                      return (
-                        <div
-                          key={`afternoon-${workshop.id}`}
-                          className={cn(
-                            "border rounded-lg p-4 text-center transition-all",
-                            isFull
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70 blur-[0.5px]" // Added blur effect for full workshops
-                              : afternoonWorkshop === workshop.id
-                                ? "border-[#026FB4] bg-blue-50 cursor-pointer" // Style for selected
-                                : "border-gray-200 hover:border-gray-300 cursor-pointer", // Style for available
-                          )}
-                          onClick={() => !isFull && handleAfternoonWorkshopSelect(workshop.id)} // Prevent click if full
-                        >
-                          <div className="flex justify-center mb-3">
-                            <div
-                              className={cn(
-                                "w-12 h-12 rounded-lg flex items-center justify-center text-2xl",
-                                isFull ? "bg-gray-200" : "bg-blue-100", // Icon background for full
-                              )}
-                            >
-                              <div className={cn(isFull ? "text-gray-400" : "text-[#026FB4]")}>{workshop.icon}</div>
-                            </div>
-                          </div>
-                          <div className={cn("font-medium text-lg mb-2", isFull && "text-gray-500")}>
-                            {workshop.name}
-                          </div>
-                          <div className={cn("text-sm text-gray-500 mb-2", isFull && "text-gray-400")}>
-                            {workshop.venue} | {workshop.schedule}
-                          </div>
-                          {/* Display remaining capacity or 'Full' message */}
-                          <div className={cn("text-sm font-medium mt-2", isFull ? "text-red-500" : "text-green-600")}>
-                            {isFull ? "No more spots remaining" : `${remainingCapacity} spot(s) remaining`}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </>
+            {errors.country && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.country.message as string}
+              </p>
             )}
           </div>
-        )
-      case "roundTables":
-        return (
-          <div className="w-full max-w-2xl mx-auto mt-6">
-            <div className="text-center text-lg font-medium text-gray-700 mb-4">{currentQuestion.question}</div>
-
-            <div className="grid grid-cols-1 gap-4 mt-4">
-              {ROUND_TABLES.map((roundTable) => (
-                <div
-                  key={roundTable.id}
-                  className={cn(
-                    "border rounded-lg p-4 cursor-pointer transition-all",
-                    selectedRoundTables.includes(roundTable.id)
-                      ? "border-[#026FB4] bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300",
-                  )}
-                  onClick={() => handleRoundTableToggle(roundTable.id)}
-                >
-                  <div className="flex items-center">
-                    <Checkbox
-                      id={`rt-${roundTable.id}`}
-                      checked={selectedRoundTables.includes(roundTable.id)}
-                      onCheckedChange={() => handleRoundTableToggle(roundTable.id)}
-                      className="mr-3 h-5 w-5 data-[state=checked]:bg-[#026FB4] data-[state=checked]:text-white"
-                    />
-                    <Label htmlFor={`rt-${roundTable.id}`} className="flex-1 cursor-pointer font-medium">
-                      {roundTable.name}
-                    </Label>
-                  </div>
-                  <div className="mt-2 pl-8 text-sm text-gray-600">{roundTable.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      case "activities":
+        );
+      case "state":
         return (
           <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
-            <div className="text-center text-lg font-medium text-gray-700 mb-4">
-              Select activities you would like to attend
-            </div>
-
-            <div className="space-y-3 mt-4">
-              {ACTIVITIES.map((activity) => (
-                <div
-                  key={activity.id}
-                  className={cn(
-                    "border rounded-lg p-4 flex items-center cursor-pointer transition-all",
-                    selectedActivities.includes(activity.id)
-                      ? "border-[#026FB4] bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300",
-                  )}
-                  onClick={() => handleActivityToggle(activity.id)}
-                >
-                  <Checkbox
-                    id={`activity-${activity.id}`}
-                    checked={selectedActivities.includes(activity.id)}
-                    onChange={() => handleActivityToggle(activity.id)}
-                    className="mr-3 h-5 w-5 data-[state=checked]:bg-[#026FB4] data-[state=checked]:text-white"
-                  />
-                  <Label htmlFor={`activity-${activity.id}`} className="flex-1 cursor-pointer">
-                    {activity.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <Select
+              value={formValues.state || ""}
+              onValueChange={(value) => handleInputChange("state", value)}
+            >
+              <SelectTrigger
+                className={cn(
+                  "w-full h-12 text-lg",
+                  errors.state
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : ""
+                )}
+              >
+                <SelectValue placeholder="Select EAC Partner State" />
+              </SelectTrigger>
+              <SelectContent>
+                {EAC_COUNTRIES.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.state && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.state.message as string}
+              </p>
+            )}
           </div>
-        )
+        );
+      case "sessions":
+        return (
+          <div className="w-full max-w-2xl mx-auto mt-6">
+            {workshopsLoading && (
+              <div className="text-center text-gray-500">
+                Loading sessions...
+              </div>
+            )}
+            {workshopsError && (
+              <div className="text-center text-red-500">{workshopsError}</div>
+            )}
+            {!workshopsLoading && !workshopsError && workshops.length === 0 && (
+              <div className="text-center text-gray-500">
+                No sessions available.
+              </div>
+            )}
+            {!workshopsLoading && !workshopsError && workshops.length > 0 && (
+              <RadioGroup
+                value={formValues.sessions || ""}
+                onValueChange={(value) => handleInputChange("sessions", value)}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4"
+              >
+                {workshops.map((workshop) => {
+                  const isFull = workshop.registered >= workshop.capacity;
+                  const remainingCapacity =
+                    workshop.capacity - workshop.registered;
+                  return (
+                    <div
+                      className="flex items-center space-x-2"
+                      key={workshop.id}
+                    >
+                      <RadioGroupItem
+                        value={workshop.id}
+                        id={workshop.id}
+                        disabled={isFull}
+                        className={
+                          isFull ? "opacity-50 cursor-not-allowed" : ""
+                        }
+                      />
+                      <Label htmlFor={workshop.id} className="flex-1">
+                        <div className="border rounded-lg p-4 text-center transition-all cursor-pointer hover:border-gray-300">
+                          <div className="flex justify-center mb-3">
+                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl">
+                              <div className="text-[#026FB4]">🎯</div>
+                            </div>
+                          </div>
+                          <div className="font-medium text-lg mb-2">
+                            {workshop.title}
+                          </div>
+                          <div className="text-sm text-gray-500 mb-2">
+                            {workshop.venue} |{" "}
+                            {workshop.schedule
+                              ? new Date(workshop.schedule).toLocaleString()
+                              : ""}
+                          </div>
+                          <div className="text-sm font-medium mt-2">
+                            {isFull ? (
+                              <span className="text-red-600 font-semibold">
+                                Full
+                              </span>
+                            ) : (
+                              <span className="text-green-600">
+                                {remainingCapacity} spots left
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            )}
+          </div>
+        );
       case "file":
         return (
           <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
             {/* Add disclaimer above the upload area */}
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-gray-700">
               <p className="font-medium text-[#026FB4] mb-1">DISCLAIMER!</p>
-              <p>Your picture is meant to personalize your experience throughout the TVET Future Skills Forum 2025.</p>
+              <p>
+                Your picture is meant is for your identification and future EAC
+                events in Rwanda"
+              </p>
               <p className="pt-2">Max size - 1 MB</p>
             </div>
-
             <div
               className="border-2 border-dashed rounded-md p-10 text-center cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={handleUploadAreaClick}
@@ -1490,8 +1578,12 @@ export default function DelegateForm() {
                   </div>
                 )}
                 <div>
-                  <p className="text-base font-medium text-[#026FB4]">Upload file</p>
-                  <p className="text-sm text-gray-500 mt-1">Click to upload or drag and drop</p>
+                  <p className="text-base font-medium text-[#026FB4]">
+                    Upload file
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Click to upload or drag and drop
+                  </p>
                 </div>
               </div>
               <input
@@ -1504,28 +1596,36 @@ export default function DelegateForm() {
               />
             </div>
           </div>
-        )
+        );
       case "radio":
         return (
           <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
             <RadioGroup
-              value={formValues[currentQuestion.id as keyof typeof formValues] || ""}
-              onValueChange={(value) => handleRadioChange(currentQuestion.id, value)}
+              value={
+                formValues[currentQuestion.id as keyof typeof formValues] || ""
+              }
+              onValueChange={(value) =>
+                handleRadioChange(currentQuestion.id, value)
+              }
               className="flex space-x-8 justify-center mt-4"
             >
               {currentQuestion.options?.map((option) => (
                 <div key={option} className="flex items-center space-x-3">
-                  <RadioGroupItem value={option} id={option.toLowerCase()} className="w-5 h-5" />
+                  <RadioGroupItem
+                    value={option}
+                    id={option.toLowerCase()}
+                    className="w-5 h-5"
+                  />
                   <Label htmlFor={option.toLowerCase()} className="text-lg">
                     {option}
                   </Label>
                 </div>
               ))}
             </RadioGroup>
-
             {/* Dietary restrictions input field */}
             {currentQuestion.id === "dietary" &&
-              formValues[currentQuestion.id as keyof typeof formValues] === "Yes" && (
+              formValues[currentQuestion.id as keyof typeof formValues] ===
+                "Yes" && (
                 <div className="mt-6 p-4 bg-gray-50 rounded-md">
                   <div className="mb-3">
                     <Label className="text-base text-gray-700 font-medium mb-2 block">
@@ -1548,7 +1648,6 @@ export default function DelegateForm() {
                       </Button>
                     </div>
                   </div>
-
                   {additionalInfo.dietary?.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {additionalInfo.dietary.map((info, index) => (
@@ -1562,9 +1661,12 @@ export default function DelegateForm() {
                             size="sm"
                             className="h-6 w-6 p-0"
                             onClick={() => {
-                              const newDietary = [...additionalInfo.dietary]
-                              newDietary.splice(index, 1)
-                              setAdditionalInfo({ ...additionalInfo, dietary: newDietary })
+                              const newDietary = [...additionalInfo.dietary];
+                              newDietary.splice(index, 1);
+                              setAdditionalInfo({
+                                ...additionalInfo,
+                                dietary: newDietary,
+                              });
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -1575,10 +1677,10 @@ export default function DelegateForm() {
                   )}
                 </div>
               )}
-
             {/* Special needs input field */}
             {currentQuestion.id === "special-needs" &&
-              formValues["special-needs" as keyof typeof formValues] === "Yes" && (
+              formValues["special-needs" as keyof typeof formValues] ===
+                "Yes" && (
                 <div className="mt-6 p-4 bg-gray-50 rounded-md">
                   <div className="mb-3">
                     <Label className="text-base text-gray-700 font-medium mb-2 block">
@@ -1601,7 +1703,6 @@ export default function DelegateForm() {
                       </Button>
                     </div>
                   </div>
-
                   {additionalInfo["special-needs"]?.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {additionalInfo["special-needs"].map((info, index) => (
@@ -1615,9 +1716,14 @@ export default function DelegateForm() {
                             size="sm"
                             className="h-6 w-6 p-0"
                             onClick={() => {
-                              const newSpecialNeeds = [...additionalInfo["special-needs"]]
-                              newSpecialNeeds.splice(index, 1)
-                              setAdditionalInfo({ ...additionalInfo, "special-needs": newSpecialNeeds })
+                              const newSpecialNeeds = [
+                                ...additionalInfo["special-needs"],
+                              ];
+                              newSpecialNeeds.splice(index, 1);
+                              setAdditionalInfo({
+                                ...additionalInfo,
+                                "special-needs": newSpecialNeeds,
+                              });
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -1628,14 +1734,112 @@ export default function DelegateForm() {
                   )}
                 </div>
               )}
-          </div>
-        )
-      default:
-        return null
-    }
-  }
+            {/* Accommodation input field */}
+            {currentQuestion.id === "accommodation" &&
+              (formValues.accommodation === "Booked" ||
+                formValues.accommodation === "Other") && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                  <div className="mb-3">
+                    <Label className="text-base text-gray-700 font-medium mb-2 block">
+                      {formValues.accommodation === "Booked"
+                        ? "Please specify the hotel/place name:"
+                        : "Please specify your accommodation arrangement:"}
+                    </Label>
+                    <Input
+                      value={accommodationDetails}
+                      onChange={(e) => setAccommodationDetails(e.target.value)}
+                      placeholder={
+                        formValues.accommodation === "Booked"
+                          ? "Hotel name or accommodation place"
+                          : "e.g., Staying at home, with family, etc."
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
 
-  // Render summary view
+            {/* ID Type conditional input */}
+            {currentQuestion.id === "idType" && formValues.idType && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-md">
+                <div className="mb-3">
+                  <Label className="text-base text-gray-700 font-medium mb-2 block">
+                    {formValues.idType === "National ID Number"
+                      ? "National ID"
+                      : "Passport Number"}
+                    <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    value={formValues.idNumber || ""}
+                    onChange={(e) => {
+                      handleInputChange("idNumber", e.target.value);
+                      setIdType(formValues.idType || "");
+                    }}
+                    placeholder={
+                      formValues.idType === "National ID Number"
+                        ? "Enter 16 digit National ID"
+                        : "Enter passport number"
+                    }
+                    className={cn(
+                      "w-full",
+                      formValues.idType === "National ID Number" &&
+                        formValues.idNumber &&
+                        formValues.idNumber.length !== 16
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    )}
+                  />
+                  {formValues.idType === "National ID Number" && (
+                    <p className="text-sm text-orange-600 mt-1">
+                      Selecting National ID as the type requires you to input
+                      the National ID number (16 digits)
+                    </p>
+                  )}
+                  {formValues.idType === "National ID Number" &&
+                    formValues.idNumber &&
+                    formValues.idNumber.length !== 16 && (
+                      <p className="text-red-500 text-sm mt-1">
+                        National ID must be exactly 16 characters
+                      </p>
+                    )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case "mode-of-transport":
+        return (
+          <div className="w-full max-w-full md:max-w-md mx-auto mt-6">
+            <RadioGroup
+              value={formValues.modeOfTransport || ""}
+              onValueChange={(value) =>
+                handleRadioChange("modeOfTransport", value)
+              }
+              className="flex space-x-8 justify-center mt-4"
+            >
+              {["Airline Transport", "Road Transport"].map((option) => (
+                <div key={option} className="flex items-center space-x-3">
+                  <RadioGroupItem
+                    value={option}
+                    id={option.toLowerCase().replace(/\s/g, "-")}
+                    className="w-5 h-5"
+                  />
+                  <Label
+                    htmlFor={option.toLowerCase().replace(/\s/g, "-")}
+                    className="text-lg"
+                  >
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+  // Render summary view - Updated to include travel info
   const renderSummaryView = () => {
     if (isSubmitted) {
       return (
@@ -1643,24 +1847,35 @@ export default function DelegateForm() {
           <div className="w-28 h-28 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
             <CheckCircle2 className="w-16 h-16 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold mb-6 text-green-600">Registration Complete!</h2>
+          <h2 className="text-3xl font-bold mb-6 text-green-600">
+            Registration Complete!
+          </h2>
           <div className="max-w-md mx-auto bg-green-50 p-6 rounded-lg mb-8 border border-green-200">
-            <p className="text-gray-700 text-lg mb-4">Thank you for registering for  4th EAC World Kiswahili Language Day Celebrations!</p>
+            <p className="text-gray-700 text-lg mb-4">
+              Thank you for registering for the 4th EAC World Kiswahili Language
+              Day Celebrations!
+            </p>
             <p className="text-gray-600">
-              You will soon receive confirmation to <span className="font-bold">{formValues.email}</span> with all the
+              You will soon receive confirmation to{" "}
+              <span className="font-bold">{formValues.email}</span> with all the
               details.
             </p>
-            <p className="text-gray-600 mt-4">Your registration ID: {registrationId}</p>
+            <p className="text-gray-600 mt-4">
+              Your registration ID: {registrationId}
+            </p>
           </div>
         </div>
-      )
+      );
     }
 
     return (
       <div className="py-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">Review Your Information</h2>
-        <p className="text-gray-600 mb-8 text-center">Please review your information before submitting.</p>
-
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Review Your Information
+        </h2>
+        <p className="text-gray-600 mb-8 text-center">
+          Please review your information before submitting.
+        </p>
         <div className="space-y-8">
           {STEPS.map((step) => (
             <div key={step.id} className="border rounded-lg overflow-hidden">
@@ -1668,219 +1883,107 @@ export default function DelegateForm() {
                 <h3 className="font-medium text-lg">{step.label}</h3>
               </div>
               <div className="p-4 space-y-3">
-                {QUESTIONS[step.id as keyof typeof QUESTIONS].map((question) => {
-                  // Fix type error by using type assertion
-                  const value = formValues[question.id as keyof DelegateFormValues]
-                  if (question.id === "roundTables" || question.id === "activities") return null
-                  if (
-                    !value &&
-                    question.id !== "workshops" &&
-                    question.id !== "roundTables" &&
-                    question.id !== "activities"
-                  )
-                    return null
-
-                  let displayValue = value
-
-                  if (question.id === "photo") {
-                    displayValue = "Uploaded"
-                  } else if (question.id === "dietary" && value === "Yes") {
-                    if (additionalInfo.dietary?.length > 0) {
-                      displayValue = additionalInfo.dietary.join(", ")
-                    } else {
-                      displayValue = "Yes"
-                    }
-                  } else if (question.id === "special-needs" && value === "Yes") {
-                    if (additionalInfo["special-needs"]?.length > 0) {
-                      displayValue = additionalInfo["special-needs"].join(", ")
-                    } else {
-                      displayValue = "Yes"
-                    }
-                  } else if (question.id === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
+                {QUESTIONS[step.id as keyof typeof QUESTIONS]?.map(
+                  (question) => {
+                    // Fix type error by using type assertion
+                    const value =
+                      formValues[question.id as keyof DelegateFormValues];
+                    let displayValue = value;
+                    if (question.id === "photo") {
+                      displayValue = "Uploaded";
+                    } else if (question.id === "dietary" && value === "Yes") {
+                      if (additionalInfo.dietary?.length > 0) {
+                        displayValue = additionalInfo.dietary.join(", ");
+                      } else {
+                        displayValue = "Yes";
                       }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
+                    } else if (
+                      question.id === "special-needs" &&
+                      value === "Yes"
+                    ) {
+                      if (additionalInfo["special-needs"]?.length > 0) {
+                        displayValue =
+                          additionalInfo["special-needs"].join(", ");
+                      } else {
+                        displayValue = "Yes";
+                      }
+                    } else if (question.id === "sessions") {
+                      const foundWorkshop = workshops.find(
+                        (w) => w.id === value
+                      );
+                      displayValue = foundWorkshop
+                        ? foundWorkshop.title
+                        : value;
+                      if (!displayValue) return null;
+                    }
+                    if (
+                      question.id === "arrivalDateTime" ||
+                      question.id === "departureDateTime"
+                    ) {
+                      if (value) {
+                        const date = new Date(value);
+                        displayValue = date.toLocaleString(); // includes time
+                      }
+                    } else if (
+                      question.id === "roadArrivalDate" ||
+                      question.id === "roadDepartureDate"
+                    ) {
+                      if (value) {
+                        const date = new Date(value);
+                        displayValue = date.toLocaleDateString(); // date only
                       }
                     }
 
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
-                    if (!displayValue) return null
-                  } else if (question.id === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (question.id === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
-                    }
+                    return (
+                      <div
+                        key={question.id}
+                        className="flex justify-between border-b pb-2"
+                      >
+                        <span className="text-gray-600 font-medium">
+                          {question.previewLabel}:
+                        </span>
+                        <span className="font-medium text-right max-w-[60%] break-words">
+                          {displayValue}
+                        </span>
+                      </div>
+                    );
                   }
-
-                  return (
-                    <div key={question.id} className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">{question.previewLabel}:</span>
-                      <span className="font-medium text-right max-w-[60%] break-words">{displayValue}</span>
-                    </div>
-                  )
-                })}
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
-    )
-  }
-
+    );
+  };
   // Calculate the circle progress style
-  const circleRadius = 20
-  const circleCircumference = 2 * Math.PI * circleRadius
-  const strokeDashoffset = circleCircumference * (1 - progress / 100)
-
+  const circleRadius = 20;
+  const circleCircumference = 2 * Math.PI * circleRadius;
+  const strokeDashoffset = circleCircumference * (1 - progress / 100);
   // Fetch workshops from API
-  useEffect(() => {
-    const fetchWorkshops = async () => {
-      setIsLoadingWorkshops(true)
-      setWorkshopsError(null)
 
-      try {
-        const response = await fetch(`${BACKEND_URL}/workshops`, {
-          method: "GET",
-          headers: {
-            accept: "*/*",
-          },
-        })
+  // Get delegateType options from QUESTIONS
+  const delegateTypeOptions = QUESTIONS["professional-info"][0]
+    .options as string[];
+  const delegateTypeEnumValues = ["GOV", "SCH/PLT", "DP", "ENT", "EXP", "CSO"];
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
-        }
+  // Helper to map label to enum value
+  const getDelegateTypeEnum = (label: string): string => {
+    const idx = delegateTypeOptions.indexOf(label);
+    return idx !== -1 ? delegateTypeEnumValues[idx] : label;
+  };
+  // Helper to map enum value to label
+  const getDelegateTypeLabel = (value: string): string => {
+    const idx = delegateTypeEnumValues.indexOf(value);
+    return idx !== -1 ? delegateTypeOptions[idx] : value;
+  };
 
-        const data = await response.json()
-        console.log("Workshops data fetched:", data)
-
-        const mappedWorkshops = data.map((workshop: Workshop) => {
-          let icon = "🎯"
-          let schedule = "TBD"
-          const title = workshop?.title?.toLowerCase() || ""
-          const workshopId = workshop?.id?.toLowerCase() || ""
-
-          // Icon logic
-          if (title.includes("quality") || workshopId === "ws1") {
-            icon = "🎯"
-          } else if (title.includes("relevance") || workshopId === "ws2") {
-            icon = "🤝"
-          } else if (title.includes("inclusion") || title.includes("access") || workshopId === "ws3") {
-            icon = "🔑"
-          } else if ((title.includes("innovation") && !title.includes("ecosystem")) || workshopId === "ws4") {
-            icon = "💡"
-          } else if (title.includes("skills outlook") || workshopId === "ws5") {
-            icon = "📊"
-          } else if (title.includes("emerging technologies") || workshopId === "ws6") {
-            icon = "🔧"
-          } else if (title.includes("inclusive workforce") || workshopId === "ws7") {
-            icon = "👥"
-          } else if (title.includes("innovation ecosystem") || workshopId === "ws8") {
-            icon = "🚀"
-          }
-
-          // Schedule logic
-          if (
-            workshopId === "ws1" ||
-            workshopId === "ws2" ||
-            workshopId === "ws3" ||
-            workshopId === "ws4" ||
-            title.includes("quality") ||
-            title.includes("relevance") ||
-            title.includes("inclusion") ||
-            (title.includes("innovation") && !title.includes("ecosystem"))
-          ) {
-            schedule = "June 4, 2025 from 11:30 AM to 1:00 PM"
-          } else if (
-            workshopId === "ws5" ||
-            workshopId === "ws6" ||
-            workshopId === "ws7" ||
-            workshopId === "ws8" ||
-            title.includes("skills outlook") ||
-            title.includes("emerging technologies") ||
-            title.includes("inclusive workforce") ||
-            (title.includes("innovation") && title.includes("ecosystem"))
-          ) {
-            schedule = "June 4, 2025 from 14:30 PM to 16:00 PM"
-          }
-
-          // Force workshops 2 and 6 to be full by setting registered = capacity
-          const capacity = workshop?.capacity || 0
-          let registered = workshop?.registered || 0
-
-          if (workshopId === "ws2" || workshopId === "ws6") {
-            registered = capacity // Make it full
-          }
-
-          return {
-            id: workshop?.id,
-            name: workshop?.title || "Untitled Workshop",
-            icon: icon,
-            capacity: capacity,
-            registered: registered,
-            venue: workshop?.venue || "TBD",
-            schedule: schedule,
-          }
-        })
-
-        // Optional: group into morning/afternoon if you still need that
-        const morning = mappedWorkshops.filter((w: { schedule: string | string[] }) => w.schedule.includes("11:30 AM"))
-        const afternoon = mappedWorkshops.filter((w: { schedule: string | string[] }) =>
-          w.schedule.includes("14:30 PM"),
-        )
-
-        console.log("Mapped workshops:", mappedWorkshops)
-        console.log("Morning workshops:", morning)
-        console.log("Afternoon workshops:", afternoon)
-
-        setWorkshops(mappedWorkshops)
-        setMorningWorkshops(morning)
-        setAfternoonWorkshops(afternoon)
-      } catch (error) {
-        console.error("Failed to fetch workshops:", error)
-        setWorkshopsError("Failed to load workshops. Please try again later.")
-      } finally {
-        setIsLoadingWorkshops(false)
-      }
-    }
-
-    fetchWorkshops()
-  }, [])
-
- 
+  // 1. Make all fields required in QUESTIONS
+  Object.keys(QUESTIONS).forEach((stepKey) => {
+    QUESTIONS[stepKey].forEach((q) => {
+      q.required = true;
+    });
+  });
 
   return (
     <div className="container mx-auto p-2 sm:p-4 md:p-6">
@@ -1908,7 +2011,6 @@ export default function DelegateForm() {
         </svg>
         Reset Form
       </button>
-
       <div
         ref={formRef}
         className="bg-white rounded-lg shadow-lg overflow-hidden min-h-[500px] sm:min-h-[600px] md:min-h-[700px] relative"
@@ -1928,14 +2030,16 @@ export default function DelegateForm() {
                 </Link>
               </Button>
               <Image
-                src={FutureSkillsLogo || "/placeholder.svg"}
+                src="/repub.jpeg"
                 alt="FutureSkills Logo"
                 width={120}
                 height={40}
                 className="w-[100px] sm:w-[120px] md:w-[150px]"
               />
             </div>
-            <div className="text-xs sm:text-sm font-medium text-[#026FB4]">{progress}% Complete</div>
+            <div className="text-xs sm:text-sm font-medium text-[#026FB4]">
+              {progress}% Complete
+            </div>
           </div>
           <div className="flex overflow-x-auto pb-2 space-x-1 sm:space-x-2 no-scrollbar">
             {STEPS.map((step, index) => (
@@ -1945,7 +2049,7 @@ export default function DelegateForm() {
                   "flex-shrink-0 px-2 py-1 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                   currentStepIndex === index && !isSummaryView
                     ? "bg-blue-50 text-[#026FB4] border border-[#026FB4]"
-                    : "text-gray-600 border border-gray-200",
+                    : "text-gray-600 border border-gray-200"
                 )}
               >
                 {step.label}
@@ -1956,14 +2060,13 @@ export default function DelegateForm() {
                 "flex-shrink-0 px-2 py-1 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                 isSummaryView
                   ? "bg-blue-50 text-[#026FB4] border border-[#026FB4]"
-                  : "text-gray-600 border border-gray-200",
+                  : "text-gray-600 border border-gray-200"
               )}
             >
               Review & Submit
             </div>
           </div>
         </div>
-
         {/* Rest of the form */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_350px]">
           {/* Sidebar */}
@@ -1982,10 +2085,14 @@ export default function DelegateForm() {
             </div>
             <div className="mb-10">
               <Link href="/landing">
-                <Image src="/public/repub.jpeg" alt="FutureSkills Logo" width={180} height={60} />
+                <Image
+                  src="/eac.jpeg"
+                  alt="FutureSkills Logo"
+                  width={180}
+                  height={60}
+                />
               </Link>
             </div>
-
             <nav className="space-y-3">
               {STEPS.map((step, index) => (
                 <div
@@ -1994,15 +2101,15 @@ export default function DelegateForm() {
                     "flex items-center p-4 rounded-md transition-colors cursor-pointer",
                     currentStepIndex === index && !isSummaryView
                       ? "bg-blue-50 text-[#026FB4]"
-                      : "text-gray-600 hover:bg-gray-100",
+                      : "text-gray-600 hover:bg-gray-100"
                   )}
                   onClick={() => {
                     // Only allow going to previous steps or current step
                     if (index <= currentStepIndex) {
-                      setCurrentStepIndex(index)
-                      setCurrentQuestionIndex(0)
-                      setIsSummaryView(false)
-                      setValidationError(null)
+                      setCurrentStepIndex(index);
+                      setCurrentQuestionIndex(0);
+                      setIsSummaryView(false);
+                      setValidationError(null);
                     }
                   }}
                 >
@@ -2011,7 +2118,7 @@ export default function DelegateForm() {
                       "w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm",
                       currentStepIndex === index && !isSummaryView
                         ? "bg-[#026FB4] text-white"
-                        : "bg-gray-200 text-gray-600",
+                        : "bg-gray-200 text-gray-600"
                     )}
                   >
                     {index + 1}
@@ -2027,20 +2134,27 @@ export default function DelegateForm() {
               <div
                 className={cn(
                   "flex items-center p-4 rounded-md transition-colors cursor-pointer",
-                  isSummaryView ? "bg-blue-50 text-[#026FB4]" : "text-gray-600 hover:bg-gray-100",
+                  isSummaryView
+                    ? "bg-blue-50 text-[#026FB4]"
+                    : "text-gray-600 hover:bg-gray-100"
                 )}
                 onClick={() => {
                   // Only allow going to summary if all steps are completed
-                  if (currentStepIndex === STEPS.length - 1 && currentQuestionIndex === questions.length - 1) {
-                    setIsSummaryView(true)
-                    setValidationError(null)
+                  if (
+                    currentStepIndex === STEPS.length - 1 &&
+                    currentQuestionIndex === questions.length - 1
+                  ) {
+                    setIsSummaryView(true);
+                    setValidationError(null);
                   }
                 }}
               >
                 <div
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm",
-                    isSummaryView ? "bg-[#026FB4] text-white" : "bg-gray-200 text-gray-600",
+                    isSummaryView
+                      ? "bg-[#026FB4] text-white"
+                      : "bg-gray-200 text-gray-600"
                   )}
                 >
                   {STEPS.length + 1}
@@ -2054,19 +2168,10 @@ export default function DelegateForm() {
           </div>
 
           {/* Main Content */}
-          <div className="p-3 sm:p-4 md:p-6 lg:p-10 flex flex-col overflow-y-auto" ref={formContainerRef}>
-            {/* Permanent back button to landing page */}
-            {/* <Button
-              variant="ghost"
-              size="sm"
-              className="self-start mb-4 -ml-2 text-gray-600 hover:text-[#026FB4] hover:bg-blue-50"
-              asChild
-            >
-              <Link href="/">
-                <ArrowLeft className="mr-1 h-4 w-4" /> Back to Home
-              </Link>
-            </Button> */}
-
+          <div
+            className="p-3 sm:p-4 md:p-6 lg:p-10 flex flex-col overflow-y-auto"
+            ref={formContainerRef}
+          >
             {!isSummaryView ? (
               <>
                 <div className="flex items-center mb-8">
@@ -2102,12 +2207,13 @@ export default function DelegateForm() {
                       {progress}%
                     </div>
                   </div>
-
                   <div className="ml-6">
                     <div className="text-sm text-gray-500">
                       Question {currentQuestionNumber}/{totalQuestions}
                     </div>
-                    <h2 className="text-2xl font-bold mt-1">{currentQuestion?.question}</h2>
+                    <h2 className="text-2xl font-bold mt-1">
+                      {currentQuestion?.question}
+                    </h2>
                   </div>
                 </div>
 
@@ -2116,7 +2222,10 @@ export default function DelegateForm() {
 
                 {/* Validation Error */}
                 {validationError && (
-                  <Alert variant="destructive" className="mt-4 max-w-full md:max-w-md mx-auto">
+                  <Alert
+                    variant="destructive"
+                    className="mt-4 max-w-full md:max-w-md mx-auto"
+                  >
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{validationError}</AlertDescription>
                   </Alert>
@@ -2132,7 +2241,12 @@ export default function DelegateForm() {
                 <Button
                   onClick={handleBack}
                   variant="outline"
-                  disabled={(currentStepIndex === 0 && currentQuestionIndex === 0 && !isSummaryView) || isSubmitting}
+                  disabled={
+                    (currentStepIndex === 0 &&
+                      currentQuestionIndex === 0 &&
+                      !isSummaryView) ||
+                    isSubmitting
+                  }
                   className="h-10 sm:h-12 px-3 sm:px-6 text-sm sm:text-base"
                 >
                   <div className="flex items-center justify-center">
@@ -2142,9 +2256,10 @@ export default function DelegateForm() {
                 <Button
                   onClick={() => {
                     if (typeof window !== "undefined") {
-                      const previewPanel = document.querySelector(".preview-panel")
+                      const previewPanel =
+                        document.querySelector(".preview-panel");
                       if (previewPanel) {
-                        previewPanel.classList.toggle("mobile-preview-active")
+                        previewPanel.classList.toggle("mobile-preview-active");
                       }
                     }
                   }}
@@ -2156,7 +2271,7 @@ export default function DelegateForm() {
                   onClick={handleNext}
                   className={cn(
                     "bg-[#026FB4] hover:bg-[#025d96] text-white h-10 sm:h-12 px-3 sm:px-6 text-sm sm:text-base",
-                    isSubmitting && "opacity-70 cursor-not-allowed",
+                    isSubmitting && "opacity-70 cursor-not-allowed"
                   )}
                 >
                   {isSubmitting ? (
@@ -2168,13 +2283,13 @@ export default function DelegateForm() {
                     "Submit Registration"
                   ) : (
                     <div className="flex items-center justify-center">
-                      Next <ChevronRight className="ml-1 h-4 w-4 sm:h-5 sm:w-5" />
+                      Next{" "}
+                      <ChevronRight className="ml-1 h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                   )}
                 </Button>
               </div>
             )}
-
             {/* Progress Dots */}
             {!isSummaryView && !isSubmitted && (
               <div className="mt-10 flex justify-center space-x-1">
@@ -2183,23 +2298,30 @@ export default function DelegateForm() {
                     key={index}
                     className={cn(
                       "h-1.5 rounded-full transition-all",
-                      index === currentQuestionIndex ? "w-10 bg-[#026FB4]" : "w-5 bg-gray-200",
+                      index === currentQuestionIndex
+                        ? "w-10 bg-[#026FB4]"
+                        : "w-5 bg-gray-200"
                     )}
                   ></div>
                 ))}
               </div>
             )}
           </div>
-
           {/* Preview Panel */}
           <div className="hidden md:block bg-gray-50 p-6 border-l">
-            <div className="text-right mb-4 text-base text-gray-500 font-medium">Preview</div>
-
+            <div className="text-right mb-4 text-base text-gray-500 font-medium">
+              Preview
+            </div>
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <div className="flex items-center space-x-4 mb-6">
                 <div className="relative w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
                   {profileImage && (
-                    <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill style={{ objectFit: "cover" }} />
+                    <Image
+                      src={profileImage || "/placeholder.svg"}
+                      alt="Profile"
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
                   )}
                 </div>
                 <div>
@@ -2210,121 +2332,77 @@ export default function DelegateForm() {
                   </h3>
                   <p className="text-sm text-gray-500">
                     {formValues.position ? formValues.position : ""}
-                    {formValues.position && formValues.organization ? " at " : ""}
+                    {formValues.position && formValues.organization
+                      ? " at "
+                      : ""}
                     {formValues.organization ? formValues.organization : ""}
-                    {!formValues.position && !formValues.organization && "Position or Organization"}
+                    {!formValues.position &&
+                      !formValues.organization &&
+                      "Position or Organization"}
                   </p>
                 </div>
               </div>
-
               <div className="space-y-3 text-base">
                 {/* Only show questions from the current section */}
                 {Object.entries(formValues).map(([key, value]) => {
-                  if (!value || value === "") return null
-                  if (key === "roundTables" || key === "activities") return null // Skip these fields
-
+                  if (!value || value === "") return null;
                   // Check if the question belongs to the current step
-                  let belongsToCurrentStep = false
+                  let belongsToCurrentStep = false;
                   if (!isSummaryView) {
-                    belongsToCurrentStep = QUESTIONS[currentStep.id].some((q) => q.id === key)
+                    belongsToCurrentStep =
+                      QUESTIONS[currentStep.id]?.some((q) => q.id === key) ||
+                      false;
                   } else {
                     // In summary view, show all fields
-                    belongsToCurrentStep = true
+                    belongsToCurrentStep = true;
                   }
-
-                  if (!belongsToCurrentStep) return null
-
+                  if (!belongsToCurrentStep) return null;
                   // Get the formatted preview label
-                  const previewLabel = getPreviewLabel(key)
-
+                  const previewLabel = getPreviewLabel(key);
                   // Special handling for file uploads and radio buttons
-                  let displayValue = value
+                  let displayValue = value;
                   if (key === "photo") {
-                    displayValue = "Uploaded"
+                    displayValue = "Uploaded";
                   } else if (key === "dietary" && value === "Yes") {
                     if (additionalInfo.dietary?.length > 0) {
-                      displayValue = additionalInfo.dietary.join(", ")
+                      displayValue = additionalInfo.dietary.join(", ");
                     } else {
-                      displayValue = "Yes"
+                      displayValue = "Yes";
                     }
                   } else if (key === "special-needs" && value === "Yes") {
                     if (additionalInfo["special-needs"]?.length > 0) {
-                      displayValue = additionalInfo["special-needs"].join(", ")
+                      displayValue = additionalInfo["special-needs"].join(", ");
                     } else {
-                      displayValue = "Yes"
+                      displayValue = "Yes";
                     }
-                  } else if (key === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
-                      }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
-                      }
-                    }
-
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
-                    if (!displayValue) return null
-                  } else if (key === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (key === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
+                  } else if (key === "sessions") {
+                    const foundWorkshop = workshops.find((w) => w.id === value);
+                    displayValue = foundWorkshop ? foundWorkshop.title : value;
+                    if (!displayValue) return null;
+                  } else if (
+                    key === "arrivalDateTime" ||
+                    key === "departureDateTime"
+                  ) {
+                    // Format datetime for display
+                    if (value) {
+                      const date = new Date(value);
+                      displayValue = date.toLocaleString();
                     }
                   }
-
                   return (
-                    <div key={key} className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">{previewLabel}:</span>
-                      <span className="font-medium text-right max-w-[60%] break-words">{displayValue}</span>
-                    </div>
-                  )
-                })}
-
-                {/* Show selected workshops in preview even if not in formData */}
-                {currentStep.id === "event-based-info" &&
-                  (morningWorkshop || afternoonWorkshop) &&
-                  !Object.keys(formValues).includes("workshops") && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">Workshops:</span>
+                    <div
+                      key={key}
+                      className="flex justify-between border-b pb-2"
+                    >
+                      <span className="text-gray-600 font-medium">
+                        {previewLabel}:
+                      </span>
                       <span className="font-medium text-right max-w-[60%] break-words">
-                        {morningWorkshop && `Morning: ${getWorkshopName(morningWorkshop)}`}
-                        {morningWorkshop && afternoonWorkshop && ", "}
-                        {afternoonWorkshop && `Afternoon: ${getWorkshopName(afternoonWorkshop)}`}
+                        {displayValue}
                       </span>
                     </div>
-                  )}
-
+                  );
+                })}
                 {/* Show name in preview even if not in formValues */}
                 {currentStep.id === "personal-info" &&
                   !Object.keys(formValues).includes("firstName") &&
@@ -2341,7 +2419,6 @@ export default function DelegateForm() {
             </div>
           </div>
         </div>
-
         {/* Enhanced Mobile Preview Panel */}
         <div className="preview-panel md:hidden fixed inset-0 bg-white z-50 transform translate-y-full transition-transform duration-300 ease-in-out">
           <div className="flex justify-between items-center p-3 sm:p-4 border-b">
@@ -2351,9 +2428,9 @@ export default function DelegateForm() {
               size="sm"
               onClick={() => {
                 if (typeof window !== "undefined") {
-                  const previewPanel = document.querySelector(".preview-panel")
+                  const previewPanel = document.querySelector(".preview-panel");
                   if (previewPanel) {
-                    previewPanel.classList.toggle("mobile-preview-active")
+                    previewPanel.classList.toggle("mobile-preview-active");
                   }
                 }
               }}
@@ -2367,7 +2444,12 @@ export default function DelegateForm() {
               <div className="flex items-center space-x-4 mb-6">
                 <div className="relative w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
                   {profileImage && (
-                    <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill style={{ objectFit: "cover" }} />
+                    <Image
+                      src={profileImage || "/placeholder.svg"}
+                      alt="Profile"
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
                   )}
                 </div>
                 <div>
@@ -2378,9 +2460,13 @@ export default function DelegateForm() {
                   </h3>
                   <p className="text-sm text-gray-500">
                     {formValues.position ? formValues.position : ""}
-                    {formValues.position && formValues.organization ? " at " : ""}
+                    {formValues.position && formValues.organization
+                      ? " at "
+                      : ""}
                     {formValues.organization ? formValues.organization : ""}
-                    {!formValues.position && !formValues.organization && "Position or Organization"}
+                    {!formValues.position &&
+                      !formValues.organization &&
+                      "Position or Organization"}
                   </p>
                 </div>
               </div>
@@ -2388,111 +2474,64 @@ export default function DelegateForm() {
               <div className="space-y-3 text-base">
                 {/* Only show questions from the current section */}
                 {Object.entries(formValues).map(([key, value]) => {
-                  if (!value || value === "") return null
-                  if (key === "roundTables" || key === "activities") return null // Skip these fields
-
+                  if (!value || value === "") return null;
                   // Check if the question belongs to the current step
-                  let belongsToCurrentStep = false
+                  let belongsToCurrentStep = false;
                   if (!isSummaryView) {
-                    belongsToCurrentStep = QUESTIONS[currentStep.id].some((q) => q.id === key)
+                    belongsToCurrentStep =
+                      QUESTIONS[currentStep.id]?.some((q) => q.id === key) ||
+                      false;
                   } else {
                     // In summary view, show all fields
-                    belongsToCurrentStep = true
+                    belongsToCurrentStep = true;
                   }
-
-                  if (!belongsToCurrentStep) return null
-
+                  if (!belongsToCurrentStep) return null;
                   // Get the formatted preview label
-                  const previewLabel = getPreviewLabel(key)
-
+                  const previewLabel = getPreviewLabel(key);
                   // Special handling for file uploads and radio buttons
-                  let displayValue = value
+                  let displayValue = value;
                   if (key === "photo") {
-                    displayValue = "Uploaded"
+                    displayValue = "Uploaded";
                   } else if (key === "dietary" && value === "Yes") {
                     if (additionalInfo.dietary?.length > 0) {
-                      displayValue = additionalInfo.dietary.join(", ")
+                      displayValue = additionalInfo.dietary.join(", ");
                     } else {
-                      displayValue = "Yes"
+                      displayValue = "Yes";
                     }
                   } else if (key === "special-needs" && value === "Yes") {
                     if (additionalInfo["special-needs"]?.length > 0) {
-                      displayValue = additionalInfo["special-needs"].join(", ")
+                      displayValue = additionalInfo["special-needs"].join(", ");
                     } else {
-                      displayValue = "Yes"
+                      displayValue = "Yes";
                     }
-                  } else if (key === "workshops") {
-                    // Format workshop selections for morning and afternoon
-                    const workshopInfo = []
-
-                    if (Array.isArray(value)) {
-                      // Handle array of workshop IDs
-                      value.forEach((workshopId) => {
-                        const workshop = workshops.find((w) => w.id === workshopId)
-                        if (workshop) {
-                          workshopInfo.push(workshop.name)
-                        } else {
-                          workshopInfo.push(workshopId) // Fallback to ID if name not found
-                        }
-                      })
-                    } else if (typeof value === "object" && value !== null) {
-                      // Handle morning/afternoon format if it exists
-                      if (value.morning) {
-                        const morningName = getWorkshopName(value.morning)
-                        workshopInfo.push(`Morning: ${morningName}`)
-                      }
-                      if (value.afternoon) {
-                        const afternoonName = getWorkshopName(value.afternoon)
-                        workshopInfo.push(`Afternoon: ${afternoonName}`)
-                      }
-                    }
-
-                    // If no workshops were found in the value, try using the selected workshop states
-                    if (workshopInfo.length === 0) {
-                      if (morningWorkshop) {
-                        workshopInfo.push(`Morning: ${getWorkshopName(morningWorkshop)}`)
-                      }
-                      if (afternoonWorkshop) {
-                        workshopInfo.push(`Afternoon: ${getWorkshopName(afternoonWorkshop)}`)
-                      }
-                    }
-
-                    displayValue = workshopInfo.join(", ")
-                    if (!displayValue) return null
-                  } else if (key === "roundTables") {
-                    if (Array.isArray(value)) {
-                      displayValue = value.map(getRoundTableName).join(", ")
-                    }
-                  } else if (key === "activities") {
-                    if (Array.isArray(value) && value.length > 0) {
-                      displayValue = value.map(getActivityName).join(", ")
-                    } else {
-                      displayValue = "None"
+                  } else if (key === "sessions") {
+                    const foundWorkshop = workshops.find((w) => w.id === value);
+                    displayValue = foundWorkshop ? foundWorkshop.title : value;
+                    if (!displayValue) return null;
+                  } else if (
+                    key === "arrivalDateTime" ||
+                    key === "departureDateTime"
+                  ) {
+                    // Format datetime for display
+                    if (value) {
+                      const date = new Date(value);
+                      displayValue = date.toLocaleString();
                     }
                   }
-
                   return (
-                    <div key={key} className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">{previewLabel}:</span>
-                      <span className="font-medium text-right max-w-[60%] break-words">{displayValue}</span>
-                    </div>
-                  )
-                })}
-
-                {/* Show selected workshops in preview even if not in formData */}
-                {currentStep.id === "event-based-info" &&
-                  (morningWorkshop || afternoonWorkshop) &&
-                  !Object.keys(formValues).includes("workshops") && (
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-gray-600 font-medium">Workshops:</span>
+                    <div
+                      key={key}
+                      className="flex justify-between border-b pb-2"
+                    >
+                      <span className="text-gray-600 font-medium">
+                        {previewLabel}:
+                      </span>
                       <span className="font-medium text-right max-w-[60%] break-words">
-                        {morningWorkshop && `Morning: ${getWorkshopName(morningWorkshop)}`}
-                        {morningWorkshop && afternoonWorkshop && ", "}
-                        {afternoonWorkshop && `Afternoon: ${getWorkshopName(afternoonWorkshop)}`}
+                        {displayValue}
                       </span>
                     </div>
-                  )}
-
+                  );
+                })}
                 {/* Show name in preview even if not in formValues */}
                 {currentStep.id === "personal-info" &&
                   !Object.keys(formValues).includes("firstName") &&
@@ -2510,46 +2549,61 @@ export default function DelegateForm() {
           </div>
         </div>
       </div>
-
       <style jsx global>{`
         @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
         }
         @keyframes shimmerReverse {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
         }
         @keyframes shimmerVertical {
-          0% { background-position: 0 200%; }
-          100% { background-position: 0 -200%; }
+          0% {
+            background-position: 0 200%;
+          }
+          100% {
+            background-position: 0 -200%;
+          }
         }
         @keyframes shimmerVerticalReverse {
-          0% { background-position: 0 -200%; }
-          100% { background-position: 0 200%; }
+          0% {
+            background-position: 0 -200%;
+          }
+          100% {
+            background-position: 0 200%;
+          }
         }
         .mobile-preview-active {
           transform: translateY(0) !important;
         }
 
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
 
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-      }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
 
-      /* Responsive adjustments */
-      @media (max-width: 640px) {
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
           .container {
-          padding: 0.5rem;
+            padding: 0.5rem;
           }
         }
       `}</style>
     </div>
-  )
+  );
 }
