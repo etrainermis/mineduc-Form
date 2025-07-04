@@ -29,6 +29,8 @@ export default function Programme() {
               <h4 className="text-white text-xl font-semibold text-center mb-2">July 6th, 2025</h4>
               <h5 className="text-white text-lg font-medium text-center">Youth Engagement Symposium</h5>
               <p className="text-white text-sm text-center mt-2">07:00 - 15:30</p>
+               <h5 className="text-white text-lg font-medium text-center">Kigali Genocide Memorial Visit</h5>
+              <p className="text-white text-sm text-center mt-2">15:30 - 17:00</p>
             </div>
           </div>
 
