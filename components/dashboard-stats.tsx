@@ -110,14 +110,22 @@ export function DashboardStats() {
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
-    ...workshopStats.map((w, i) => ({
-      title: w.title,
-      value: isLoading ? "..." : `${w.count}/${w.capacity}`,
-      description: `${isLoading ? 0 : Math.round((w.count / w.capacity) * 100)}% capacity used`,
-      icon: Target,
-      color: i % 2 === 0 ? "text-purple-600" : "text-green-600",
-      bgColor: i % 2 === 0 ? "bg-purple-100" : "bg-green-100",
-    })),
+    ...workshopStats.map((w, i) => {
+      let capacity = w.capacity;
+      if (w.title.toLowerCase().includes("symposium")) {
+        capacity = 200;
+      } else if (w.title.toLowerCase().includes("youth engagement")) {
+        capacity = 150;
+      }
+      return {
+        title: w.title,
+        value: isLoading ? "..." : `${w.count}/${capacity}`,
+        description: `${isLoading ? 0 : Math.round((w.count / capacity) * 100)}% capacity used`,
+        icon: Target,
+        color: i % 2 === 0 ? "text-purple-600" : "text-green-600",
+        bgColor: i % 2 === 0 ? "bg-purple-100" : "bg-green-100",
+      };
+    }),
     {
       title: "Total Sessions",
       value: isLoading ? "..." : workshopStats.length.toString(),
